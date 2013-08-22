@@ -64,6 +64,7 @@ function Game() {
   this.pause = false;
   this.selectedGame = 0;
   
+  
   //Canvas
   this.backgroundCanvas = document.getElementById("backgroundCanvas");
   this.backgroundContext = this.backgroundCanvas.getContext("2d");
@@ -470,9 +471,10 @@ function Game() {
     this.movingObject.x = 0;
     this.movingObject.y = 0;
     this.movingObject = 0;
+    
     var move = document.getElementById("move");
     var select = document.getElementById("select");
-    var sell = document.getElementById("move");
+    var sell = document.getElementById("sell");
     
     if (this.cursorMode == "move") {
       move.className = "buttonSelected";
@@ -531,7 +533,7 @@ function Person() {
   
   this.thought = "wandering";
   this.cash = Math.ceil(Math.random()*500);
-  if (Math.random() < game.popularity/100) {
+  if (Math.random() < game.popularity/100 && game.popularity > 70) {
     this.cash += 2000; //High roller boost
   }
   this.mood = 100;
