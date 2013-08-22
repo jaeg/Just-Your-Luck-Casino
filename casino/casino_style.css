@@ -1,0 +1,61 @@
+.button {
+    background-color:red;
+    border-radius: 10px;
+    
+    margin: 5px;
+}
+.button:hover {
+    background-color:orange;
+}
+
+canvas {
+    position:absolute;
+    top: 80px;
+    left: 10px;
+    background: transparent;
+    border-style:solid;
+    height: 480px;
+    width: 640px;
+}
+
+#backgroundCanvas {
+    z-index: -2;
+}
+
+#midgroundCanvas{
+    z-index: -1;
+}
+
+#forgroundCanvas{
+    z-index: 0;
+}
+
+#info {
+    position: absolute;
+    top: 80px;
+    left: 660px;
+    border-style:solid;
+    margin-left:5px;
+    height:480px;
+    width:200px;
+}
+
+#construction {
+    position: absolute;
+    top: 580;
+    left: 10px;
+    border-style:solid;
+    padding: 10px;
+    height:100;
+    width:640;
+}
+
+#help {
+    position: absolute;
+    top: 80px;
+    left: 880px;
+    border-style:solid;
+    padding: 10px;
+    height:600px;
+    width:300px;
+}
