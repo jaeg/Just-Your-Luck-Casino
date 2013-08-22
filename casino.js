@@ -265,7 +265,7 @@ function Game() {
       var noneSelected = true;
       for (var i = 0; i < MaxGames; i++) {
         if (this.casinoGames[i] != 0) {
-          if (this.casinoGames[i].x < this.mX && this.casinoGames[i].x+this.casinoGames[i].width > this.mX  && this.casinoGames[i].y < this.mY && this.casinoGames[i].y + this.casinoGames[i].height > this.mY) {
+          if (this.mouseWithinBounds(this.casinoGames[i].x,this.casinoGames[i].y,this.casinoGames[i].width,this.casinoGames[i].height)) {
             this.selectedGame = this.casinoGames[i];
             this.casinoGames[i].selected = true;
             noneSelected = false;
@@ -290,7 +290,7 @@ function Game() {
       if (noneSelected == true) {
         for (var i = 0; i < MaxAttendance; i++) {
           if (this.people[i] != 0) {
-            if (this.people[i].x < this.mX && this.people[i].x+16 > this.mX  && this.people[i].y < this.mY && this.people[i].y + 16 > this.mY) {
+            if (this.mouseWithinBounds(this.people[i].x,this.people[i].y,16,16)) {
               this.people[i].selected = true;
               noneSelected = false;
               
@@ -324,7 +324,7 @@ function Game() {
         
         for (var i = 0; i < 500; i++) {  
           if (this.doodads[i] != 0) {
-            if (this.doodads[i].x < this.mX && this.doodads[i].x+16 > this.mX  && this.doodads[i].y < this.mY && this.doodads[i].y + 16 > this.mY) {
+            if (this.mouseWithinBounds(this.doodads[i].x,this.doodads[i].y,16,16)) {
               this.doodads[i].selected = true;
               this.movingObject = this.doodads[i];
             }
@@ -337,7 +337,7 @@ function Game() {
         
         for (var i = 0; i < MaxGames; i++) {
           if (this.casinoGames[i] != 0) {
-            if (this.casinoGames[i].x < this.mX && this.casinoGames[i].x+this.casinoGames[i].width > this.mX  && this.casinoGames[i].y < this.mY && this.casinoGames[i].y + this.casinoGames[i].height > this.mY) {
+            if (this.mouseWithinBounds(this.casinoGames[i].x,this.casinoGames[i].y,this.casinoGames[i].width,this.casinoGames[i].height)) {
               if (this.movingObject != 0) {
                 this.movingObject.selected = false;
               }
@@ -362,7 +362,7 @@ function Game() {
     {
       for (var i = 0; i < 500; i++) {  
         if (this.doodads[i] != 0) {
-          if (this.doodads[i].x < this.mX && this.doodads[i].x+16 > this.mX  && this.doodads[i].y < this.mY && this.doodads[i].y + 16 > this.mY) {
+          if (this.mouseWithinBounds(this.doodads[i].x,this.doodads[i].y,16,16)) {
             if (confirm("Do you want to sell this decoration?"))
             {
               this.cash += 5;
@@ -376,7 +376,8 @@ function Game() {
       
       for (var i = 0; i < MaxGames; i++) {
         if (this.casinoGames[i] != 0) {
-          if (this.casinoGames[i].x < this.mX && this.casinoGames[i].x+this.casinoGames[i].width > this.mX  && this.casinoGames[i].y < this.mY && this.casinoGames[i].y + this.casinoGames[i].height > this.mY) {
+          
+          if (this.mouseWithinBounds(this.casinoGames[i].x,this.casinoGames[i].y,this.casinoGames[i].width,this.casinoGames[i].height)) {
             if (confirm("Do you want to sell this game?"))
             {
               this.cash += gameCosts[this.casinoGames[i].type];
@@ -392,7 +393,7 @@ function Game() {
       
     }
   }
-    
+  
   this.mouseMoved = function(e)
   {
     this.mX = e.pageX - this.forgroundCanvas.offsetLeft;
@@ -402,8 +403,12 @@ function Game() {
         this.movingObject.x = Math.round(this.mX/16)*16;
         this.movingObject.y = Math.round(this.mY/16)*16; 
       }
-      
     }
+  }
+  
+  this.mouseWithinBounds = function(x,y,width,height)
+  {
+    return x < this.mX && x+width > this.mX  && y < this.mY && y + height > this.mY;
   }
   
   this.pauseGame = function()
@@ -447,8 +452,7 @@ function Game() {
     else
     {
       alert("If you buy anymore games you will go bankrupt.");
-   }
-
+    }
   }
   
   this.addDoodad = function(doodad)
@@ -557,7 +561,7 @@ function Person() {
   this.temperament  = Math.ceil(Math.random() * 3);
   
   this.frame = 0;
-  this.ticks = Math.floor(Math.random()*100); //Add some variety
+  this.ticks = Math.floor(Math.random()*1000); //Add some variety
   this.image = 0;
   
   if (this.cash > 500) {
@@ -722,8 +726,6 @@ function Person() {
     
     //this.context.drawImage(personImage,this.x,this.y);
     this.context.drawImage(this.image, 16 * this.frame, 0, 16, 16, this.x, this.y, 16, 16);
-    
-    
   };
   
   this.move = function()
