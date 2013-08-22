@@ -44,8 +44,8 @@ doodadImage.src = "doodads.png";
 
 //Constants
   var StartingAttendance = 10;
-  var MaxAttendance = 1000;
-  var MaxSlots = 100;
+  var MaxAttendance = 500;
+  var MaxGames = 100;
   var doorX = 320;
   var doorY = 448;
   
@@ -62,8 +62,8 @@ badEvents[2] = "A fee is being charged by the state.";
 //Game class
 function Game() {
   this.stoppedRunning = false;
-  this.mouseX = 0;
-  this.mouseY = 0;
+  this.mX = 0;
+  this.mY = 0;
   this.cursorMode = "move";
   this.movingObject = 0;
   this.pause = false;
@@ -101,7 +101,7 @@ function Game() {
   this.popularity = 50;
   this.casinoGames = new Array(100);
   
-  this.doodads = new Array(1000);
+  this.doodads = new Array(500);
   
   
   //Standard functions
@@ -117,12 +117,12 @@ function Game() {
       }
     }
     
-    for (var i = 0; i < MaxSlots; i++) {
+    for (var i = 0; i < MaxGames; i++) {
       this.casinoGames[i] = 0;
       
     }
     
-        for (var i = 0; i < 1000; i++) {
+        for (var i = 0; i < 500; i++) {
       this.doodads[i] = 0;
       
     }
@@ -151,7 +151,7 @@ function Game() {
         }
       }
       
-      for (var i = 0; i < MaxSlots; i++) {
+      for (var i = 0; i < MaxGames; i++) {
           if (this.casinoGames[i] != 0) {
             this.casinoGames[i].update();
           }
@@ -209,11 +209,11 @@ function Game() {
     this.forgroundContext.drawImage(doorImage,doorX,doorY);
     
     if (this.cursorMode == "move") {
-      this.forgroundContext.drawImage(crossImage,this.mouseX-16,this.mouseY-16);
+      this.forgroundContext.drawImage(crossImage,this.mX-16,this.mY-16);
     }
     else if (this.cursorMode == "select")
     {
-      this.forgroundContext.drawImage(magnifyingImage,this.mouseX-16,this.mouseY-16);
+      this.forgroundContext.drawImage(magnifyingImage,this.mX-16,this.mY-16);
     }
     else
     {
@@ -226,7 +226,7 @@ function Game() {
       this.midgroundContext.clearRect( 0 , 0 , 640 , 480);
     }
     
-    for (var i = 0; i < MaxSlots; i++) {
+    for (var i = 0; i < MaxGames; i++) {
       if (this.casinoGames[i] != 0) {
         this.casinoGames[i].draw();
       }
@@ -237,7 +237,7 @@ function Game() {
     this.backgroundContext.fillRect(0,0,640,480);
     this.backgroundContext.fillStyle= floorPattern;
     
-    for (var i = 0; i < 1000; i++) {
+    for (var i = 0; i < 500; i++) {
       if (this.doodads[i] != 0) {
         this.doodads[i].draw();
       }
@@ -263,9 +263,9 @@ function Game() {
     if (this.cursorMode == "select")
     {
       var noneSelected = true;
-      for (var i = 0; i < MaxSlots; i++) {
+      for (var i = 0; i < MaxGames; i++) {
         if (this.casinoGames[i] != 0) {
-          if (this.casinoGames[i].x < this.mouseX && this.casinoGames[i].x+this.casinoGames[i].width > this.mouseX  && this.casinoGames[i].y < this.mouseY && this.casinoGames[i].y + this.casinoGames[i].height > this.mouseY) {
+          if (this.casinoGames[i].x < this.mX && this.casinoGames[i].x+this.casinoGames[i].width > this.mX  && this.casinoGames[i].y < this.mY && this.casinoGames[i].y + this.casinoGames[i].height > this.mY) {
             this.selectedGame = this.casinoGames[i];
             this.casinoGames[i].selected = true;
             noneSelected = false;
@@ -290,7 +290,7 @@ function Game() {
       if (noneSelected == true) {
         for (var i = 0; i < MaxAttendance; i++) {
           if (this.people[i] != 0) {
-            if (this.people[i].x < this.mouseX && this.people[i].x+16 > this.mouseX  && this.people[i].y < this.mouseY && this.people[i].y + 16 > this.mouseY) {
+            if (this.people[i].x < this.mX && this.people[i].x+16 > this.mX  && this.people[i].y < this.mY && this.people[i].y + 16 > this.mY) {
               this.people[i].selected = true;
               noneSelected = false;
               
@@ -322,9 +322,9 @@ function Game() {
     {
       if (this.movingObject == 0) {
         
-        for (var i = 0; i < 1000; i++) {  
+        for (var i = 0; i < 500; i++) {  
           if (this.doodads[i] != 0) {
-            if (this.doodads[i].x < this.mouseX && this.doodads[i].x+16 > this.mouseX  && this.doodads[i].y < this.mouseY && this.doodads[i].y + 16 > this.mouseY) {
+            if (this.doodads[i].x < this.mX && this.doodads[i].x+16 > this.mX  && this.doodads[i].y < this.mY && this.doodads[i].y + 16 > this.mY) {
               this.doodads[i].selected = true;
               this.movingObject = this.doodads[i];
             }
@@ -335,9 +335,9 @@ function Game() {
           }
         }
         
-        for (var i = 0; i < MaxSlots; i++) {
+        for (var i = 0; i < MaxGames; i++) {
           if (this.casinoGames[i] != 0) {
-            if (this.casinoGames[i].x < this.mouseX && this.casinoGames[i].x+this.casinoGames[i].width > this.mouseX  && this.casinoGames[i].y < this.mouseY && this.casinoGames[i].y + this.casinoGames[i].height > this.mouseY) {
+            if (this.casinoGames[i].x < this.mX && this.casinoGames[i].x+this.casinoGames[i].width > this.mX  && this.casinoGames[i].y < this.mY && this.casinoGames[i].y + this.casinoGames[i].height > this.mY) {
               if (this.movingObject != 0) {
                 this.movingObject.selected = false;
               }
@@ -360,10 +360,9 @@ function Game() {
     }
     else if (this.cursorMode == "sell")
     {
-      alert("Sell");
-      for (var i = 0; i < 1000; i++) {  
+      for (var i = 0; i < 500; i++) {  
         if (this.doodads[i] != 0) {
-          if (this.doodads[i].x < this.mouseX && this.doodads[i].x+16 > this.mouseX  && this.doodads[i].y < this.mouseY && this.doodads[i].y + 16 > this.mouseY) {
+          if (this.doodads[i].x < this.mX && this.doodads[i].x+16 > this.mX  && this.doodads[i].y < this.mY && this.doodads[i].y + 16 > this.mY) {
             if (confirm("Do you want to sell this decoration?"))
             {
               this.cash += 5;
@@ -375,9 +374,9 @@ function Game() {
         }
       }
       
-      for (var i = 0; i < MaxSlots; i++) {
+      for (var i = 0; i < MaxGames; i++) {
         if (this.casinoGames[i] != 0) {
-          if (this.casinoGames[i].x < this.mouseX && this.casinoGames[i].x+this.casinoGames[i].width > this.mouseX  && this.casinoGames[i].y < this.mouseY && this.casinoGames[i].y + this.casinoGames[i].height > this.mouseY) {
+          if (this.casinoGames[i].x < this.mX && this.casinoGames[i].x+this.casinoGames[i].width > this.mX  && this.casinoGames[i].y < this.mY && this.casinoGames[i].y + this.casinoGames[i].height > this.mY) {
             if (confirm("Do you want to sell this game?"))
             {
               this.cash += gameCosts[this.casinoGames[i].type];
@@ -393,22 +392,15 @@ function Game() {
       
     }
   }
-  
-  this.mouseReleased = function(e)
-  {    
-    if (this.cursorMode == "move") {
-      
-    }
-  }
-  
+    
   this.mouseMoved = function(e)
   {
-    this.mouseX = e.pageX - this.forgroundCanvas.offsetLeft;
-    this.mouseY = e.pageY - this.forgroundCanvas.offsetTop;
+    this.mX = e.pageX - this.forgroundCanvas.offsetLeft;
+    this.mY = e.pageY - this.forgroundCanvas.offsetTop;
     if (this.cursorMode == "move") {
       if (this.movingObject != 0) {
-        this.movingObject.x = Math.round(this.mouseX/16)*16;
-        this.movingObject.y = Math.round(this.mouseY/16)*16; 
+        this.movingObject.x = Math.round(this.mX/16)*16;
+        this.movingObject.y = Math.round(this.mY/16)*16; 
       }
       
     }
@@ -436,7 +428,7 @@ function Game() {
   {
     if (game.cash > gameCosts[newGame]) {
       var noneCreated = true;
-      for (var i = 0; i < MaxSlots; i++) {
+      for (var i = 0; i < MaxGames; i++) {
         if (this.casinoGames[i] == 0) {
           this.casinoGames[i] = new CasinoGame();
           this.casinoGames[i].setType(newGame);
@@ -463,7 +455,7 @@ function Game() {
   {
     if (game.cash > 10) {
       var noneCreated = true;
-      for (var i = 0; i < 1000; i++) {
+      for (var i = 0; i < 500; i++) {
         if (this.doodads[i] == 0) {
           this.doodads[i] = new Doodad();
           this.doodads[i].frame = doodad;
@@ -515,7 +507,6 @@ function Game() {
   
   //Register event listeners
   forgroundCanvas.addEventListener("mousedown",function(e){game.mouseClicked(e)},false);
-  forgroundCanvas.addEventListener("mouseup",function(e){game.mouseReleased(e)},false);
   forgroundCanvas.addEventListener("mousemove",function(e){game.mouseMoved(e)},false);
 }
 
@@ -613,7 +604,7 @@ function Person() {
       
       case "findGameToPlay":
           //Search for a free game here.
-          for (var i = 0; i < MaxSlots; i++) {
+          for (var i = 0; i < MaxGames; i++) {
             if (game.casinoGames[i] != 0)
             {
               if (game.casinoGames[i].currentPlayers < game.casinoGames[i].maxPlayers  && game.casinoGames[i].costToPlay < this.cash && game.casinoGames[i] != game.movingObject) {
@@ -704,7 +695,9 @@ function Person() {
         break;
       
       case "leave":
-
+        this.goalX = doorX+16;
+        this.goalY = doorY+16;
+      
         if (this.closeToGoal()) {
           if (this.mood <= 30)
           {
@@ -716,8 +709,6 @@ function Person() {
           this.gone = true;
         }
         
-        this.goalX = doorX+16;
-        this.goalY = doorY+16;
         this.move();
         break;
     }

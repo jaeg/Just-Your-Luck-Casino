@@ -1,21 +1,44 @@
 .button {
     background-color:red;
-    border-radius: 10px;
+    margin: 3px;
+    padding: 2px;
+    display: inline-block;
+    border-radius: 6px;
+    transition: background-color .6s;
     
-    margin: 5px;
 }
 .button:hover {
-    background-color:orange;
+    background-color:orange; 
 }
+
+.button:active{
+    background-color: #781313;
+    transition: background-color 0.1s;
+}
+
+.buttonSelected {
+    background-color:orange;
+    border-style: dashed;
+    border-color: green;
+    margin: 3px;
+    padding: 2px;
+    display: inline-block;
+    border-radius: 6px;
+}
+
 
 canvas {
     position:absolute;
     top: 80px;
-    left: 10px;
+    left: 330px;
     background: transparent;
     border-style:solid;
     height: 480px;
     width: 640px;
+}
+
+#container {
+    
 }
 
 #backgroundCanvas {
@@ -33,7 +56,7 @@ canvas {
 #info {
     position: absolute;
     top: 80px;
-    left: 660px;
+    left: 980px;
     border-style:solid;
     margin-left:5px;
     height:480px;
@@ -43,17 +66,17 @@ canvas {
 #construction {
     position: absolute;
     top: 580;
-    left: 10px;
+    left: 330px;
     border-style:solid;
     padding: 10px;
-    height:100;
-    width:640;
+    height:120px;
+    width:620px;
 }
 
 #help {
     position: absolute;
     top: 80px;
-    left: 880px;
+    left: 0px;
     border-style:solid;
     padding: 10px;
     height:600px;
