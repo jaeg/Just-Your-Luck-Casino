@@ -12,11 +12,6 @@ personImage.src = "Person.png";
 var personHighRollerImage = new Image();
 personHighRollerImage.src = "PersonHighRoller.png";
 
-var crossImage = new Image();
-crossImage.src = "cross.png";
-var magnifyingImage = new Image();
-magnifyingImage.src = "magnifyingglass.png";
-
 var doorImage = new Image();
 doorImage.src = "door.png";
 
@@ -88,7 +83,6 @@ function Game() {
   gameCosts['blackjack'] = 250;
   gameCosts['craps'] = 500;
   gameCosts['roulette'] = 150;
-  SLOTSCOST = 100;
   
   var ticks = 0;
   
@@ -109,7 +103,7 @@ function Game() {
     for (var i = 0; i < MaxAttendance; i++) {
       if (this.attendance < StartingAttendance){
         this.people[i] = new Person();
-        this.people[i].init(doorX, doorY,this.forgroundCanvas, this.forgroundContext);
+        this.people[i].init(doorX, doorY, this.forgroundContext);
         this.attendance++;
       }
       else {
@@ -122,7 +116,7 @@ function Game() {
       
     }
     
-        for (var i = 0; i < 500; i++) {
+    for (var i = 0; i < 500; i++) {
       this.doodads[i] = 0;
       
     }
@@ -164,7 +158,7 @@ function Game() {
         for (var i = 0; i < MaxAttendance; i++) {
           if (this.people[i] == 0) {
             this.people[i] = new Person();
-            this.people[i].init(doorX,doorY,this.forgroundCanvas, this.forgroundContext);
+            this.people[i].init(doorX,doorY, this.forgroundContext);
             this.attendance++;
             break;
           }
@@ -207,19 +201,7 @@ function Game() {
     }
     
     this.forgroundContext.drawImage(doorImage,doorX,doorY);
-    
-    if (this.cursorMode == "move") {
-      this.forgroundContext.drawImage(crossImage,this.mX-16,this.mY-16);
-    }
-    else if (this.cursorMode == "select")
-    {
-      this.forgroundContext.drawImage(magnifyingImage,this.mX-16,this.mY-16);
-    }
-    else
-    {
-      
-    }
-    
+        
     //Midground items
     if (this.cursorMode == "move" ||this.cursorMode == "sell")
     {
@@ -265,7 +247,7 @@ function Game() {
       var noneSelected = true;
       for (var i = 0; i < MaxGames; i++) {
         if (this.casinoGames[i] != 0) {
-          if (this.mouseWithinBounds(this.casinoGames[i].x,this.casinoGames[i].y,this.casinoGames[i].width,this.casinoGames[i].height)) {
+          if (this.mouseWithinBounds(this.casinoGames[i].x,this.casinoGames[i].y,this.casinoGames[i].width,this.casinoGames[i].height) && noneSelected == true) {
             this.selectedGame = this.casinoGames[i];
             this.casinoGames[i].selected = true;
             noneSelected = false;
@@ -287,10 +269,10 @@ function Game() {
           }
         }
       }
-      if (noneSelected == true) {
+
         for (var i = 0; i < MaxAttendance; i++) {
           if (this.people[i] != 0) {
-            if (this.mouseWithinBounds(this.people[i].x,this.people[i].y,16,16)) {
+            if (this.mouseWithinBounds(this.people[i].x,this.people[i].y,16,16) && noneSelected == true) {
               this.people[i].selected = true;
               noneSelected = false;
               
@@ -308,7 +290,7 @@ function Game() {
               this.people[i].selected = false;
             }
           }
-        }
+        
       }
 
       
@@ -376,7 +358,6 @@ function Game() {
       
       for (var i = 0; i < MaxGames; i++) {
         if (this.casinoGames[i] != 0) {
-          
           if (this.mouseWithinBounds(this.casinoGames[i].x,this.casinoGames[i].y,this.casinoGames[i].width,this.casinoGames[i].height)) {
             if (confirm("Do you want to sell this game?"))
             {
@@ -439,7 +420,7 @@ function Game() {
           this.casinoGames[i].setType(newGame);
           this.changeCursorMode("move");
           this.movingObject = this.casinoGames[i];
-          this.casinoGames[i].init(0,0,this.midgroundCanvas,this.midgroundContext);
+          this.casinoGames[i].init(0,0,this.midgroundContext);
           game.cash -= gameCosts[newGame];
           noneCreated = false;
           break;
@@ -465,7 +446,7 @@ function Game() {
           this.doodads[i].frame = doodad;
           this.cursorMode = "move";
           this.movingObject = this.doodads[i];
-          this.doodads[i].init(0,0,this.midgroundCanvas,this.midgroundContext);
+          this.doodads[i].init(0,0,this.midgroundContext);
           game.cash -= 10;
           noneCreated = false;
           this.amountOfDoodads++;
@@ -489,23 +470,26 @@ function Game() {
     this.movingObject.x = 0;
     this.movingObject.y = 0;
     this.movingObject = 0;
+    var move = document.getElementById("move");
+    var select = document.getElementById("select");
+    var sell = document.getElementById("move");
     
     if (this.cursorMode == "move") {
-      document.getElementById("move").className = "buttonSelected";
-      document.getElementById("select").className = "button";
-      document.getElementById("sell").className = "button"; 
+      move.className = "buttonSelected";
+      select.className = "button";
+      sell.className = "button"; 
     }
     else if (this.cursorMode == "select") 
     {
-      document.getElementById("select").className = "buttonSelected";
-      document.getElementById("move").className = "button";
-      document.getElementById("sell").className = "button"; 
+      select.className = "buttonSelected";
+      move.className = "button";
+      sell.className = "button"; 
     }
     else
     {
-      document.getElementById("sell").className = "buttonSelected";
-      document.getElementById("move").className = "button";
-      document.getElementById("select").className = "button";  
+      sell.className = "buttonSelected";
+      move.className = "button";
+      select.className = "button";  
     }
   }
   
@@ -521,14 +505,12 @@ function Entity() {
   this.y = 0;
   
   //Canvas layer this drawable belongs to.
-  this.canvas = 0;
   this.context = 0;
   
-  this.init = function(x,y,canvas,context)
+  this.init = function(x,y,context)
   {
     this.x = x;
     this.y = y;
-    this.canvas = canvas;
     this.context = context;
   };
   
@@ -963,3 +945,8 @@ function run() {
     frameCount = 0;
   }
 }
+
+
+//Start the game already!
+StartGame();
+game.changeCursorMode('select');
