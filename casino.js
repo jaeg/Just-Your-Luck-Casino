@@ -211,13 +211,17 @@ function Game() {
     if (this.cursorMode == "move") {
       this.forgroundContext.drawImage(crossImage,this.mouseX-16,this.mouseY-16);
     }
-    else
+    else if (this.cursorMode == "select")
     {
       this.forgroundContext.drawImage(magnifyingImage,this.mouseX-16,this.mouseY-16);
     }
+    else
+    {
+      
+    }
     
     //Midground items
-    if (this.cursorMode == "move")
+    if (this.cursorMode == "move" ||this.cursorMode == "sell")
     {
       this.midgroundContext.clearRect( 0 , 0 , 640 , 480);
     }
@@ -354,6 +358,40 @@ function Game() {
         this.movingObject = 0;
       }
     }
+    else if (this.cursorMode == "sell")
+    {
+      alert("Sell");
+      for (var i = 0; i < 1000; i++) {  
+        if (this.doodads[i] != 0) {
+          if (this.doodads[i].x < this.mouseX && this.doodads[i].x+16 > this.mouseX  && this.doodads[i].y < this.mouseY && this.doodads[i].y + 16 > this.mouseY) {
+            if (confirm("Do you want to sell this decoration?"))
+            {
+              this.cash += 5;
+              delete this.doodads[i];
+              this.doodads[i] = 0;
+              break;
+            }
+          }
+        }
+      }
+      
+      for (var i = 0; i < MaxSlots; i++) {
+        if (this.casinoGames[i] != 0) {
+          if (this.casinoGames[i].x < this.mouseX && this.casinoGames[i].x+this.casinoGames[i].width > this.mouseX  && this.casinoGames[i].y < this.mouseY && this.casinoGames[i].y + this.casinoGames[i].height > this.mouseY) {
+            if (confirm("Do you want to sell this game?"))
+            {
+              this.cash += gameCosts[this.casinoGames[i].type];
+              this.casinoGames[i].sold = true;
+              delete this.casinoGames[i];
+              this.casinoGames[i] = 0;
+              break;
+            }
+          }
+        }
+        
+      }
+      
+    }
   }
   
   this.mouseReleased = function(e)
@@ -459,11 +497,19 @@ function Game() {
     if (this.cursorMode == "move") {
       document.getElementById("move").className = "buttonSelected";
       document.getElementById("select").className = "button";
+      document.getElementById("sell").className = "button"; 
+    }
+    else if (this.cursorMode == "select") 
+    {
+      document.getElementById("select").className = "buttonSelected";
+      document.getElementById("move").className = "button";
+      document.getElementById("sell").className = "button"; 
     }
     else
     {
-      document.getElementById("select").className = "buttonSelected";
-      document.getElementById("move").className = "button"; 
+      document.getElementById("sell").className = "buttonSelected";
+      document.getElementById("move").className = "button";
+      document.getElementById("select").className = "button";  
     }
   }
   
@@ -612,6 +658,11 @@ function Person() {
       case "playGame":
         //The game has been moved on me!
         this.frame = 1;
+        if (this.gameImPlaying.sold == true) {
+          delete this.gameImPlaying;
+          this.gameImPlaying = 0;
+          this.thought = "wandering";  
+        }
         if (this.goalX != this.gameImPlaying.x || this.goalY != this.gameImPlaying.y) {
           this.gameImPlaying.currentPlayers--;
           this.gameImPlaying = 0;
@@ -722,6 +773,7 @@ function CasinoGame() {
   this.upKeep = 0;
   this.maxPlayers = 0;
   this.type = "";
+  this.sold = false;
   
   this.width = 16;
   this.height = 16;
