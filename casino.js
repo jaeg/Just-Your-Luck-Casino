@@ -64,7 +64,7 @@ function Game() {
   this.pause = false;
   this.selectedGame = 0;
   
-  
+ 
   //Canvas
   this.backgroundCanvas = document.getElementById("backgroundCanvas");
   this.backgroundContext = this.backgroundCanvas.getContext("2d");
@@ -98,7 +98,6 @@ function Game() {
   
   this.doodads = new Array(500);
   
-  
   //Standard functions
   this.init = function(){
     for (var i = 0; i < MaxAttendance; i++) {
@@ -121,6 +120,7 @@ function Game() {
       this.doodads[i] = 0;
       
     }
+    
   }
   
   this.update = function(){

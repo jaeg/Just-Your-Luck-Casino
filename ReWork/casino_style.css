@@ -1,0 +1,26 @@
+#casino {
+	width:50%;
+	height: 50%;
+	background-color: red;
+}
+
+.person {
+	width: 16px;
+	height: 16px;
+	position:absolute;
+	background:url(img/Person.png) 0 0;
+}
+
+.casinoGame {
+	width: 32px;
+	height: 32px;
+	background-color:blue;
+	position:absolute;
+}
+
+.noClass {
+	width: 16px;
+	height: 16px;
+	background-color:red;
+	position:absolute;
+}
