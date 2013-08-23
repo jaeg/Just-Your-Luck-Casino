@@ -388,6 +388,40 @@ function Game() {
     }
   }
   
+  this.keyPress = function(e)
+  {
+    switch (String.fromCharCode(e.keyCode))
+    {
+      case "1":
+          this.addGame("slots");
+        break;
+      case "2":
+          this.addGame("roulette");
+        break;
+      case "3":
+          this.addGame("blackjack");
+        break;
+      case "4":
+          this.addGame("craps");
+        break;
+      case "5":
+          this.addDoodad(1);
+        break;
+      case "6":
+        this.addDoodad(0);
+        break;
+      case "7":
+        this.addDoodad(2);
+        break;
+      case "8":
+        this.addDoodad(3);
+        break;
+      case "9":
+        this.addDoodad(4);
+        break;
+    }
+  }
+  
   this.mouseWithinBounds = function(x,y,width,height)
   {
     return x < this.mX && x+width > this.mX  && y < this.mY && y + height > this.mY;
@@ -498,8 +532,9 @@ function Game() {
   //Register event listeners
   forgroundCanvas.addEventListener("mousedown",function(e){game.mouseClicked(e)},false);
   forgroundCanvas.addEventListener("mousemove",function(e){game.mouseMoved(e)},false);
-}
+  document.onkeydown = function(e){game.keyPress(e);};
 
+}
 //Entity base class
 function Entity() {
   //Position
