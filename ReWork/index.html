@@ -27,7 +27,28 @@
 				<div class="button" onclick="casinoSim.pauseGame()">Pause/UnPause</div>
 		</div>
 		<div id="info">
-				Info panel
+                <div id="personInfo" style="display:none">
+                    -Customer Info-<br/>
+                    Mood: <span id="personMood"></span><br/>
+                    Cash: <span id="personCash"></span><br/>
+                    Temperament: <span id="personTemp"></span><br/>
+                    Current Thought: <span id="personThought"></span><br/>
+                </div>
+                <div id="gameInfo" style="display:none">
+                    -Game Info-<br/>
+                    Cash Out:<input id="gameCashOut"/><br/>
+                    Win Rate:<input id="gameWinRate"/><br/>
+                    Cost to Play:<input id="gameCostToPlay"/><br/>
+                    Up Keep Cost:<span id="gameUpKeep"></span><br/>
+                    Max Players: <span id="gameMaxPlayers"></span><br/>
+                    <div  class="button" id="saveGameButton" onclick="game.saveCasinoGame()">Save</div>
+                </div>
+                <div id="casinoInfo">
+                    -Casino Info-<br/>
+                    Cash:<span id="casinoCash"></span><br/>
+                    Attendance:<span id="casinoAttendance"></span><br/>
+                    Popularity:<span id="casinoPopularity"></span><br/>
+                </div>
 		</div>
 		<script src="casino.js">
 
