@@ -4,11 +4,32 @@
 	</head>
 	<body>
 		<div id="casino">
-			<script src="casino.js">
-			</script>
-			<script>
-				//Run();
-			</script>
+			<div id="cursor" class="cursor"></div>
 		</div>
+		<div id="menu">
+				Cursor:
+				<div class="button" id="move" onclick="casinoSim.changeCursor('move')">Move</div>
+				<div class="button" id="select" onclick="casinoSim.changeCursor('select')">Select</div>
+				<div class="button" id="sell" onclick="casinoSim.changeCursor('sell')">Sell</div><br/>
+				Create:
+				<div class="button" onclick="casinoSim.createCursor('slots');">Slots</div>
+				<div class="button" onclick="casinoSim.createCursor('roulette');">Roulette</div>
+				<div class="button" onclick="casinoSim.createCursor('blackjack');">Blackjack</div>
+				<div class="button" onclick="casinoSim.createCursor('craps');">Craps</div>
+				<br/>
+				<div  class="button" onclick="casinoSim.createCursor(1)">Add Pathway</div>
+				<div  class="button" onclick="casinoSim.createCursor(0)">Add Plant</div>
+				<div  class="button" onclick="casinoSim.createCursor(2)">Add Column</div>
+				<div  class="button" onclick="casinoSim.createCursor(3)">Add Chair</div>
+				<div  class="button" onclick="casinoSim.createCursor(4)">Add Tree</div>
+				<br/>
+				<div class="button" onclick="casinoSim.pauseGame()">Pause/UnPause</div>
+		</div>
+		<div id="info">
+				Info panel
+		</div>
+		<script src="casino.js">
+
+		</script>
 	</body>
 </html>

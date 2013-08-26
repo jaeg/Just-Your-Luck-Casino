@@ -1,26 +1,110 @@
 #casino {
-	width:50%;
-	height: 50%;
+	width:640px;
+	height: 480px;
 	background-color: red;
+
+}
+
+#menu {
+		width: 640px;
+		height: 200px;
+		position:absolute;
+		top: 500px;
+}
+
+#info {
+		width: 200px;
+		height: 480px;
+		position: absolute;
+		left: 660px;
+		top: 0px;
+		border-style:solid;
 }
 
 .person {
 	width: 16px;
 	height: 16px;
 	position:absolute;
-	background:url(img/Person.png) 0 0;
+	background:url(img/Person.png);
 }
 
 .casinoGame {
-	width: 32px;
-	height: 32px;
+	width: 16px;
+	height: 16px;
 	background-color:blue;
 	position:absolute;
 }
 
-.noClass {
+.slots {
+		width: 16px;
+		height: 16px;
+		position:absolute;
+		background:url(img/SlotMachine.png);
+}
+
+.roulette {
+		width: 32px;
+		height: 32px;
+		position:absolute;
+		background:url(img/roulettewheel.png) ;
+}
+.blackjack {
+		width: 32px;
+		height: 32px;
+		position:absolute;
+		background:url(img/blackjack.png);
+}
+.craps {
+		width: 32px;
+		height: 32px;
+		position:absolute;
+		background:url(img/craps.png);
+}
+
+.doodad {
 	width: 16px;
 	height: 16px;
-	background-color:red;
 	position:absolute;
+	background:url(img/doodads.png);
+}
+
+.selected {
+	background-color:green;
+	opacity: .5;
+}
+
+.cursor{
+	width: 16px;
+	height: 16px;
+	background-color:green;
+	opacity:.3;
+	position:absolute;
+}
+
+.button {
+    background-color:red;
+    margin: 3px;
+    padding: 2px;
+    display: inline-block;
+    border-radius: 6px;
+    transition: background-color .6s;
+    
+}
+.button:hover {
+    background-color:orange; 
+}
+
+.button:active{
+    background-color: #781313;
+    transition: background-color 0.1s;
+}
+
+.buttonSelected {
+    background-color:orange;
+    border-style: dashed;
+    border-color: green;
+    margin: 3px;
+    padding: 2px;
+    display: inline-block;
+    border-radius: 6px;
 }

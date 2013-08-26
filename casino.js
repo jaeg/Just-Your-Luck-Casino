@@ -421,7 +421,7 @@ function Game() {
         break;
     }
   }
-  
+      
   this.mouseWithinBounds = function(x,y,width,height)
   {
     return x < this.mX && x+width > this.mX  && y < this.mY && y + height > this.mY;
