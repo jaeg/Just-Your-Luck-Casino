@@ -55,6 +55,7 @@ function CasinoSim() {
 	this.creating = 0;
 	
 	this.cash = 100000;
+	this.popularity = 50;
 	
 	this.init = function()
 	{
@@ -292,16 +293,23 @@ function Person() {
 	this.gameImPlaying = 0;
 	this.playerNumber = 0;
 	this.temperament  = Math.ceil(Math.random() * 3);
-	this.cash = Math.ceil(Math.random()*500);
+	this.cash = 100;//Math.ceil(Math.random()*500);
 	var frame = 1;
 	var ticks = 0;
 	this.mood = 100;
+	
+
 	this.onMouseDown = function(e){
 		this.parent.onMouseDown.call(this);
 	}
 	
 	this.update = function()
 	{
+		if (this.cash > 500) {
+				alert("TEST")
+				this.element.className = "highRoller";
+				this.temperament  = 5;
+		}
 		ticks++;
 		this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 
