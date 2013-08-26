@@ -7,6 +7,7 @@ var mouseX = 0;
 var mouseY = 0;
 var somethingAtCursor = false;
 
+
 var gameCosts = new Array();
 gameCosts['slots'] = 100;
 gameCosts['blackjack'] = 250;
@@ -29,6 +30,9 @@ casinoDiv.addEventListener('mousedown',function(e){
 				casinoSim.addDoodad();
 		else		
 				casinoSim.addGame();
+	}
+	if (somethingAtCursor == false) {
+		casinoSim.unselectAll();
 	}
 	somethingAtCursor = false;
 	},false);
@@ -149,6 +153,7 @@ function CasinoSim() {
 	
 	this.changeCursor = function(cursorMode)
 	{
+		this.unselectAll();
 		this.cursorMode = cursorMode;
 		document.getElementById("move").className = "button";
 		document.getElementById("sell").className = "button";
@@ -177,6 +182,7 @@ function Entity()
 	this.selected = false;
 	this.width = 16;
 	this.height = 16;
+	this.moving = false;
 	
 	this.init = function(x,y,myClass)
 	{	
@@ -240,8 +246,20 @@ Entity.prototype.onMouseDown = function(e)
 			this.element.className = this.element.className + " selected";
 			break;
 		case "move":
-			this.element.className = this.element.className + " selected";
-			this.selected = true;
+			if (this.element.className != "person") {
+				if (this.moving == true)
+				{
+					this.selected = false;
+					this.moving = false;
+				}
+				else
+				{
+					this.element.className = this.element.className + " selected";
+					this.selected = true;
+					this.moving = true;
+				}
+			}
+
 			break;
 	}
 }
@@ -305,6 +323,10 @@ function CasinoGame() {
 		}
 		
 		this.element.style.backgroundPosition = (frame * this.width) + "px 0px";
+		
+		if (this.selected == true && casinoSim.cursorMode == "move") {
+			this.setPosition(Math.round(mouseX/16)*16,Math.round(mouseY/16)*16);
+		}
 	}
 	
 	this.setType = function(type)
@@ -377,6 +399,9 @@ function Doodad() {
 	this.update = function()
 	{
 		this.element.style.backgroundPosition = (frame * this.width) + "px 0px";
+		if (this.selected == true && casinoSim.cursorMode == "move") {
+			this.setPosition(Math.round(mouseX/16)*16,Math.round(mouseY/16)*16);
+		}
 	}
 	
 	this.setType = function(type)
