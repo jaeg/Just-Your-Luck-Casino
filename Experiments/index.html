@@ -1,0 +1,63 @@
+<html>
+	<head>
+		<title></title>
+		<script>
+			var infoShown = false;
+			
+			function toggleInfo() {
+				if (infoShown == false)
+				{
+					var info = document.getElementById("info");
+					info.style.width = "500px";
+					info.style.left = "300px";
+					info.style.opacity = 1;
+					infoShown = true;
+				}
+				else
+				{
+					var info = document.getElementById("info");
+					info.style.width = "0px";
+					info.style.left = "500px";
+					info.style.opacity = 0;
+					infoShown = false;
+				}
+			}
+		</script>
+		<style>
+			#info {
+				height: 200px;
+				width: 0px;
+				overflow: hidden;
+				opacity: 0;
+				background-color:red;
+				transition-duration: 2s;
+				-moz-transition: 2s;
+				-ms-transition: 2s;
+				-webkit-transition: 2s;
+				position:absolute;
+				left: 525px;
+				top: 100px;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<div id="info">
+			<div id="personInfo">
+				-Player Info-<br/>
+				Cash:<br/>
+				Temperament:<br/>
+				Mood:<br/>
+			</div>
+			<div id="gameInfo">
+				-Game Info-<br/>
+				Cash:<br/>
+				Temperament:<br/>
+				Mood:<br/>
+			</div>
+		</div>
+		
+		<input type="button" onclick="toggleInfo()" value="Toggle Info"/>
+	</body>
+	
+</html>
