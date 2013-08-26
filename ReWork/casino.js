@@ -275,7 +275,7 @@ function Person() {
 	
 	this.update = function()
 	{
-		this.element.style.backgroundPosition = (frame * this.width) + "px 0px";
+		this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 	}
 }
 
@@ -322,7 +322,7 @@ function CasinoGame() {
 			frame = 0;
 		}
 		
-		this.element.style.backgroundPosition = (frame * this.width) + "px 0px";
+		this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 		
 		if (this.selected == true && casinoSim.cursorMode == "move") {
 			this.setPosition(Math.round(mouseX/16)*16,Math.round(mouseY/16)*16);
@@ -398,7 +398,7 @@ function Doodad() {
 	
 	this.update = function()
 	{
-		this.element.style.backgroundPosition = (frame * this.width) + "px 0px";
+		this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 		if (this.selected == true && casinoSim.cursorMode == "move") {
 			this.setPosition(Math.round(mouseX/16)*16,Math.round(mouseY/16)*16);
 		}
