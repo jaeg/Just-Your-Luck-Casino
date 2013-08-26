@@ -6,6 +6,10 @@ var maxHeight = 480;
 var mouseX = 0;
 var mouseY = 0;
 var somethingAtCursor = false;
+var doorX = 320;
+var doorY = 456;
+
+var startingAttendance = 10;
 
 
 var gameCosts = new Array();
@@ -50,11 +54,13 @@ function CasinoSim() {
 	this.cursorMode = "create";
 	this.creating = 0;
 	
-	this.cash = 1000;
+	this.cash = 100000;
 	
 	this.init = function()
 	{
-		//this.changeCursor("select");
+		for (var i =0; i < startingAttendance; i++) {
+			this.addPerson();
+		}
 	}
 	
 	this.update = function() {
@@ -64,6 +70,10 @@ function CasinoSim() {
 		for (i in this.people)
 		{
 			this.people[i].update();
+			if (this.people[i].gone == true)
+			{
+				this.removeFromArray(this.people,this.people[i]);
+			}
 		}
 		
 		for (i in this.casinoGames) {
@@ -106,19 +116,26 @@ function CasinoSim() {
 	{
 		if (10 < this.cash)
 		{
-				var doodad = new Doodad();
-				doodad.init(Math.round(mouseX/16)*16,Math.round(mouseY/16)*16,"doodad");
-				doodad.setType(this.creating);
-				this.doodads.push(doodad);
-				this.cash -= 10;
+			var doodad = new Doodad();
+			doodad.init(Math.round(mouseX/16)*16,Math.round(mouseY/16)*16,"doodad");
+			doodad.setType(this.creating);
+			this.doodads.push(doodad);
+			this.cash -= 10;
 		}
 		else
 		{
-				alert("You will go bankrupt if you place anymore of these.");
+			alert("You will go bankrupt if you place anymore of these.");
 		}
 	}
 	
-    this.addGame = function()
+	this.addPerson = function()
+	{
+		var newPerson = new Person();
+		newPerson.init(doorX,doorY,"person");
+		this.people.push(newPerson);
+	}
+	
+	this.addGame = function()
 	{
 		if (gameCosts[this.creating] < this.cash)
 		{
@@ -268,14 +285,158 @@ Entity.prototype.onMouseDown = function(e)
 Person.prototype = new Entity();
 Person.prototype.parent = Entity.prototype;
 function Person() {
+	this.goalX = Math.floor((Math.random()*640));
+	this.goalY = Math.floor((Math.random()*480));
+	this.thought = "wandering";
+	this.gone = false;
+	this.gameImPlaying = 0;
+	this.playerNumber = 0;
+	this.temperament  = Math.ceil(Math.random() * 3);
+	this.cash = Math.ceil(Math.random()*500);
 	var frame = 1;
+	var ticks = 0;
+	this.mood = 100;
 	this.onMouseDown = function(e){
 		this.parent.onMouseDown.call(this);
 	}
 	
 	this.update = function()
 	{
+		ticks++;
 		this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
+
+		if (this.gameImPlaying.sold == true || this.gameImPlaying.moving == true) {
+				gameImPlaying.currentPlayers--;
+				this.gameImPlaying = 0;
+				this.thought = "wandering";
+		}
+		
+		if (this.mood <= 0)
+		{
+				this.thought = "leave";
+		}
+		
+		switch (this.thought)
+		{
+				case "wandering":
+					this.move();
+					if (this.closeToGoal()) {
+						this.goalX = Math.floor((Math.random()*640));
+						this.goalY = Math.floor((Math.random()*480));
+						this.thought = "findGameToPlay";
+					}
+					if (this.cash <= 0)
+					{
+						this.thought = "leave";
+					}
+				break;
+				case "findGameToPlay":
+						for (var i in casinoSim.casinoGames) {
+							if (casinoSim.casinoGames[i].currentPlayers < casinoSim.casinoGames[i].maxPlayers  && casinoSim.casinoGames[i].costToPlay < this.cash && casinoSim.casinoGames[i].moving == false) {
+							  this.gameImPlaying = casinoSim.casinoGames[i];
+							  this.thought = "movetogame";
+							  break;
+						  }
+						}
+					  if (this.gameImPlaying == 0)
+					  {
+						this.thought = "wandering";
+						this.mood -= this.temperament ; //I'm upset because I couldn't find a game to play.
+					  }
+				break;
+				case "movetogame":
+						this.goalX = this.gameImPlaying.getPosition().x;
+						this.goalY = this.gameImPlaying.getPosition().y;
+						this.move();
+						
+						if (this.gameImPlaying.currentPlayers >= this.gameImPlaying.maxPlayers)
+						{
+								this.thought = "wandering";
+								this.gameImPlaying = 0;
+								this.goalX = Math.floor((Math.random()*640));
+								this.goalY = Math.floor((Math.random()*480));
+						}
+						else if (this.closeToGoal()) {
+								this.thought = "playgame";
+								this.playerNumber = this.gameImPlaying.currentPlayers;
+								this.gameImPlaying.currentPlayers++;
+						}
+				break;
+				case "playgame":
+						frame = 1;
+						if (this.gameImPlaying.height > 16) {
+								this.setPosition(this.gameImPlaying.getPosition().x+16*this.playerNumber,this.gameImPlaying.getPosition().y+16);
+						}
+						else
+						{
+								this.setPosition(this.goalX,this.goalY+1);
+						}
+						if (ticks%60 == 0)
+						{
+								this.cash -= this.gameImPlaying.costToPlay;
+								if (this.gameImPlaying.didIWin())
+								{
+										casinoSim.cash -= this.gameImPlaying.cashOut;
+										this.cash += this.gameImPlaying.cashOut;
+										this.mood += 10;
+								}
+								else
+								{
+										this.mood -= this.temperament;
+								}
+						}
+						if (this.cash < this.gameImPlaying.costToPlay) {
+								this.thought = "wandering";
+								this.gameImPlaying.currentPlayers--;
+								this.gameImPlaying = 0;
+						}
+						
+				break;
+		
+				case "leave":
+						this.goalX = doorX;
+						this.goalY = doorY;
+						this.move();
+
+						if (this.closeToGoal()) {
+								if (this.gone == false) {
+										this.remove();
+										this.gone = true;
+								}
+						}
+				break;
+		}
+
+	}
+	
+	this.move = function()
+	{
+		var coords = this.getPosition();
+		//Simple movement
+		if (coords.x > this.goalX) {
+			coords.x -= 1;
+			frame = 2;
+		}
+		else if (coords.x < this.goalX) {
+			coords.x += 1;
+			frame = 3;
+		}
+	    
+		if (coords.y > this.goalY) {
+			coords.y -= 1;
+			frame = 1;
+		}
+		else if (coords.y < this.goalY) {
+			coords.y += 1;
+			frame = 0;
+		}
+		this.setPosition(coords.x,coords.y);
+	}	
+
+	this.closeToGoal = function()
+	{
+		var coords = this.getPosition();
+		return (Math.abs(coords.x - this.goalX) < 1 && Math.abs(coords.y - this.goalY) < 1);
 	}
 }
 
@@ -329,6 +490,18 @@ function CasinoGame() {
 		}
 	}
 	
+		this.didIWin = function()
+		{
+		  var roll = Math.random();
+		  if (this.winRate < roll) {
+			return false;
+		  }
+		  else
+		  {
+			return true;
+		  }
+		}
+	
 	this.setType = function(type)
 	{
 		this.setClass(type);
@@ -349,7 +522,7 @@ function CasinoGame() {
 		  this.width = 32;
 		  this.height = 32;
 		  this.upKeep = 4.5;
-		  this.costToPlay = 15;
+		  this.costToPlay = 50;
 		  this.cashOut = 20;
 		  this.winRate = .3
 		  break;
