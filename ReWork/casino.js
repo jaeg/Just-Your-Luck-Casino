@@ -19,20 +19,17 @@ gameCosts['roulette'] = 150;
 
 casinoDiv.addEventListener("mousemove", function (e) {
     if (e.clientX < maxWidth - 16)
-        mouseX =  e.clientX;
+        mouseX = e.clientX;
     if (e.clientY < maxHeight - 16)
-        mouseY =  e.clientY;
-	var cursorDiv = document.getElementById("cursor");
+        mouseY = e.clientY;
+    var cursorDiv = document.getElementById("cursor");
     cursorDiv.style.left = (Math.round(mouseX / 16) * 16) + "px";
     cursorDiv.style.top = (Math.round(mouseY / 16) * 16) + "px";
-	if (casinoSim.cursorMode == "create")
-	{
-		cursorDiv.style.display = "block";
-	}
-	else
-	{
-		cursorDiv.style.display = "none";
-	}
+    if (casinoSim.cursorMode == "create") {
+        cursorDiv.style.display = "block";
+    } else {
+        cursorDiv.style.display = "none";
+    }
 }, false);
 
 casinoDiv.addEventListener('mousedown', function (e) {
@@ -59,7 +56,7 @@ function CasinoSim() {
     var people = [];
     this.casinoGames = [];
     this.doodads = [];
-	var ticks = 0;
+    var ticks = 0;
     this.cursorMode = "select";
     this.creating = 0;
 
@@ -73,7 +70,7 @@ function CasinoSim() {
     }
 
     this.update = function () {
-		ticks++;
+        ticks++;
         if (this.pause)
             return true;
 
@@ -96,23 +93,23 @@ function CasinoSim() {
             alert("You have gone bankrupt!");
             return false;
         }
-		
-		if (ticks%180 == 0) {
-			var roll = Math.random() * 100;
-			
-			if (this.popularity > roll) {
-				this.addPerson();
-			}
-		}
-		document.getElementById("casinoCash").innerHTML = "$"+this.cash;
-		document.getElementById("casinoAttendance").innerHTML = people.length;
-		document.getElementById("casinoPopularity").innerHTML = this.popularity+"%";
+
+        if (ticks % 180 == 0) {
+            var roll = Math.random() * 100;
+
+            if (this.popularity > roll) {
+                this.addPerson();
+            }
+        }
+        document.getElementById("casinoCash").innerHTML = "$" + this.cash;
+        document.getElementById("casinoAttendance").innerHTML = people.length;
+        document.getElementById("casinoPopularity").innerHTML = this.popularity + "%";
 
         return true;
     }
 
     this.unselectAll = function () {
-		hideInfo();
+        hideInfo();
         for (i in people) {
             people[i].selected = false;
             people[i].element.className = people[i].element.className.replace(" selected", '');
@@ -133,7 +130,7 @@ function CasinoSim() {
         if (10 < this.cash) {
             var doodad = new Doodad();
             doodad.init(Math.round(mouseX / 16) * 16, Math.round(mouseY / 16) * 16, "doodad");
-	
+
             doodad.setType(this.creating);
             this.doodads.push(doodad);
             this.cash -= 10;
@@ -160,12 +157,11 @@ function CasinoSim() {
         }
     }
 
-	this.saveCasinoGame = function()
-	{
-	  this.editing.winRate = parseFloat(document.getElementById("gameWinRate").value);
-	  this.editing.cashOut = parseFloat(document.getElementById("gameCashOut").value);
-	  this.editing.costToPlay =  parseFloat(document.getElementById("gameCostToPlay").value);
-	}
+    this.saveCasinoGame = function () {
+        this.editing.winRate = parseFloat(document.getElementById("gameWinRate").value);
+        this.editing.cashOut = parseFloat(document.getElementById("gameCashOut").value);
+        this.editing.costToPlay = parseFloat(document.getElementById("gameCostToPlay").value);
+    }
     this.createCursor = function (itemType) {
         this.creating = itemType;
         this.changeCursor("create");
@@ -207,7 +203,7 @@ function Entity() {
     this.selected = false;
     this.width = 16;
     this.height = 16;
-    this.moving = false;
+    this.beingMoved = false;
 
     this.init = function (x, y, myClass) {
         this.element = document.createElement("div");
@@ -273,13 +269,13 @@ Entity.prototype.onMouseDown = function (e) {
         break;
     case "move":
         if (this.element.className != "person") {
-            if (this.moving == true) {
+            if (this.beingMoved == true) {
                 this.selected = false;
-                this.moving = false;
+                this.beingMoved = false;
             } else {
                 this.element.className = this.element.className + " selected";
                 this.selected = true;
-                this.moving = true;
+                this.beingMoved = true;
             }
         }
 
@@ -307,16 +303,15 @@ function Person() {
 
     this.onMouseDown = function (e) {
         this.parent.onMouseDown.call(this);
-		if (casinoSim.cursorMode == "select")
-		{
-			showInfo();
-			document.getElementById("gameInfo").style.display = "none";
-			document.getElementById("personInfo").style.display = "block";
-			document.getElementById("personMood").innerHTML = this.mood+"%";
-            document.getElementById("personCash").innerHTML = "$"+this.cash;
+        if (casinoSim.cursorMode == "select") {
+            showInfo();
+            document.getElementById("gameInfo").style.display = "none";
+            document.getElementById("personInfo").style.display = "block";
+            document.getElementById("personMood").innerHTML = this.mood + "%";
+            document.getElementById("personCash").innerHTML = "$" + this.cash;
             document.getElementById("personThought").innerHTML = this.thought;
             document.getElementById("personTemp").innerHTML = this.temperament;
-		}
+        }
     }
 
     this.update = function () {
@@ -411,13 +406,11 @@ function Person() {
             if (this.closeToGoal()) {
                 if (this.gone == false) {
                     this.remove();
-					if (this.mood > 70) {
-						casinoSim.popularity += 2;
-					}
-					else
-					{
-						casinoSim.popularity -= this.temperament;
-					}
+                    if (this.mood > 70) {
+                        casinoSim.popularity += 2;
+                    } else {
+                        casinoSim.popularity -= this.temperament;
+                    }
                     this.gone = true;
                 }
             }
@@ -472,7 +465,7 @@ function CasinoGame() {
     this.currentLoses = 0;
     this.currentWins = 0;
     this.type = "";
-	this.editing = 0;
+    this.editing = 0;
 
     this.onMouseDown = function (e) {
         this.parent.onMouseDown.call(this);
@@ -483,19 +476,18 @@ function CasinoGame() {
                 casinoSim.removeFromArray(casinoSim.casinoGames, this);
                 this.remove();
             }
-        }
-		else if (casinoSim.cursorMode == "select") {
-			showInfo();
-			document.getElementById("gameInfo").style.display = "block";
-			document.getElementById("personInfo").style.display = "none";
-			casinoSim.editing = this;
-			
-			document.getElementById("gameWinRate").value = this.winRate;
+        } else if (casinoSim.cursorMode == "select") {
+            showInfo();
+            document.getElementById("gameInfo").style.display = "block";
+            document.getElementById("personInfo").style.display = "none";
+            casinoSim.editing = this;
+
+            document.getElementById("gameWinRate").value = this.winRate;
             document.getElementById("gameCashOut").value = this.cashOut;
             document.getElementById("gameCostToPlay").value = this.costToPlay;
-            document.getElementById("gameUpKeep").innerHTML = "$"+this.upKeep;
+            document.getElementById("gameUpKeep").innerHTML = "$" + this.upKeep;
             document.getElementById("gameMaxPlayers").innerHTML = this.maxPlayers;
-		}
+        }
     }
 
     this.update = function () {
@@ -605,17 +597,17 @@ function Doodad() {
 
 
 function showInfo() {
-		var info = document.getElementById("infoBox");
-		info.style.width = "500px";
-		info.style.left = "300px";
-		info.style.opacity = 1;
+    var info = document.getElementById("infoBox");
+    info.style.width = "500px";
+    info.style.left = "300px";
+    info.style.opacity = 1;
 }
 
-function hideInfo(){
-	var info = document.getElementById("infoBox");
-	info.style.width = "0px";
-	info.style.left = "500px";
-	info.style.opacity = 0;
+function hideInfo() {
+    var info = document.getElementById("infoBox");
+    info.style.width = "0px";
+    info.style.left = "500px";
+    info.style.opacity = 0;
 }
 
 //***************************
@@ -624,7 +616,7 @@ function hideInfo(){
 
 function StartGame() {
     casinoSim.init();
-	casinoSim.changeCursor("select");
+    casinoSim.changeCursor("select");
     Run();
 }
 
@@ -651,7 +643,6 @@ function Run() {
         requestAnimFrame(Run);
     }
 }
-
 
 //Start the game already!
 var casinoSim = new CasinoSim();
