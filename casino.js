@@ -354,7 +354,7 @@ function Person() {
         ticks++;
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 
-        if (this.gameImPlaying.sold == true || this.gameImPlaying.moving == true) {
+        if (this.gameImPlaying.sold == true || this.gameImPlaying.beingMoved == true) {
             gameImPlaying.currentPlayers--;
             this.gameImPlaying = 0;
             this.thought = "wandering";
@@ -378,7 +378,7 @@ function Person() {
             break;
         case "findGameToPlay":
             for (var i in casinoSim.casinoGames) {
-                if (casinoSim.casinoGames[i].currentPlayers < casinoSim.casinoGames[i].maxPlayers && casinoSim.casinoGames[i].costToPlay < this.cash && casinoSim.casinoGames[i].moving == false) {
+                if (casinoSim.casinoGames[i].currentPlayers < casinoSim.casinoGames[i].maxPlayers && casinoSim.casinoGames[i].costToPlay < this.cash && casinoSim.casinoGames[i].beingMoved == false) {
                     this.gameImPlaying = casinoSim.casinoGames[i];
                     this.thought = "movetogame";
                     break;
