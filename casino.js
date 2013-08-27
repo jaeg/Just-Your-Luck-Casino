@@ -17,6 +17,16 @@ gameCosts['blackjack'] = 250;
 gameCosts['craps'] = 500;
 gameCosts['roulette'] = 150;
 
+//Events
+var goodEvents = new Array(2);
+goodEvents[0] = "You have won an award!  Here's your prize!";
+goodEvents[1] = "You are the most fun casino around!  Here's a bonus!";
+
+var badEvents = new Array(3);
+badEvents[0] = "Someone broke in and stole money!";
+badEvents[1] = "A slot machine malfunctioned and emptied its contents.";
+badEvents[2] = "A fee is being charged by the state.";
+
 casinoDiv.addEventListener("mousemove", function (e) {
     if (e.clientX < maxWidth - 16)
         mouseX = e.clientX;
@@ -59,6 +69,7 @@ function CasinoSim() {
     var ticks = 0;
     this.cursorMode = "select";
     this.creating = 0;
+    this.paused = false;
 
     this.cash = 100000;
     this.popularity = 50;
@@ -89,18 +100,37 @@ function CasinoSim() {
             this.doodads[i].update();
         }
 
+        //Check to see if player has lost.
         if (this.cash <= 0) {
             alert("You have gone bankrupt!");
             return false;
         }
 
+        //Add new people
         if (ticks % 180 == 0) {
             var roll = Math.random() * 100;
-
             if (this.popularity > roll) {
                 this.addPerson();
             }
         }
+        
+        //Roll a random number to trigger an event.
+        if (Math.random() < .0001)
+        {
+          var extraCash = Math.ceil(Math.random() * 200);
+          if (Math.random() > .5) {
+            alert(goodEvents[Math.floor(Math.random() * 2)]);
+            this.cash += extraCash;
+            alert("You gained $"+extraCash+"!");
+          }
+          else
+          {
+            alert(badEvents[Math.floor(Math.random() * 3)]);
+            this.cash -= extraCash;
+            alert("You lost $"+extraCash+"!");
+          }
+        }
+        
         document.getElementById("casinoCash").innerHTML = "$" + this.cash;
         document.getElementById("casinoAttendance").innerHTML = people.length;
         document.getElementById("casinoPopularity").innerHTML = this.popularity + "%";
@@ -295,11 +325,17 @@ function Person() {
     this.gameImPlaying = 0;
     this.playerNumber = 0;
     this.temperament = Math.ceil(Math.random() * 3);
-    this.cash = 100; //Math.ceil(Math.random()*500);
+    this.cash = Math.ceil(Math.random()*500);
+    if (Math.random() < casinoSim.popularity/100 && casinoSim.popularity > 70) {
+      this.cash += 2000; //High roller boost
+    }
     var frame = 1;
     var ticks = 0;
     this.mood = 100;
-
+    if (this.cash > 500) {
+      this.element.className = "highRoller";
+      this.temperament = 5;
+    }
 
     this.onMouseDown = function (e) {
         this.parent.onMouseDown.call(this);
@@ -315,10 +351,6 @@ function Person() {
     }
 
     this.update = function () {
-        if (this.cash > 500) {
-            this.element.className = "highRoller";
-            this.temperament = 5;
-        }
         ticks++;
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 
