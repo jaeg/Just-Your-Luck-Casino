@@ -1,8 +1,7 @@
 #casino {
 	width:640px;
 	height: 480px;
-	background-color: red;
-
+	background:url("img/Floor.png");
 }
 
 #menu {
@@ -19,6 +18,22 @@
 		left: 660px;
 		top: 0px;
 		border-style:solid;
+}
+
+#infoBox {
+		height: 200px;
+		width: 0px;
+		overflow: hidden;
+		opacity: 0;
+		background-color:green;
+		transition-duration: 2s;
+		-moz-transition: 2s;
+		-ms-transition: 2s;
+		-webkit-transition: 2s;
+		position:absolute;
+		z-index: 99999;
+		left: 525px;
+		top: 100px;
 }
 
 .person {
@@ -87,14 +102,13 @@
 
 .selected {
 	background-color:green;
-	opacity: .5;
 }
 
 .cursor{
 	width: 16px;
 	height: 16px;
 	background-color:green;
-	opacity:.3;
+	opacity:.6;
 	position:absolute;
 }
 
