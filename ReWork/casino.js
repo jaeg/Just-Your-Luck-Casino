@@ -1,16 +1,15 @@
 var casinoDiv = document.getElementById("casino");
-var cursorDiv = document.getElementById("cursor");
 
-var maxWidth = 640;
-var maxHeight = 480;
 var mouseX = 0;
 var mouseY = 0;
 var somethingAtCursor = false;
+
+var maxWidth = 640;
+var maxHeight = 480;
 var doorX = 320;
 var doorY = 456;
 
 var startingAttendance = 10;
-
 
 var gameCosts = new Array();
 gameCosts['slots'] = 100;
@@ -23,7 +22,7 @@ casinoDiv.addEventListener("mousemove", function (e) {
         mouseX =  e.clientX;
     if (e.clientY < maxHeight - 16)
         mouseY =  e.clientY;
-		
+	var cursorDiv = document.getElementById("cursor");
     cursorDiv.style.left = (Math.round(mouseX / 16) * 16) + "px";
     cursorDiv.style.top = (Math.round(mouseY / 16) * 16) + "px";
 	if (casinoSim.cursorMode == "create")
@@ -57,7 +56,7 @@ function isNumber(n) {
 //Classes
 
 function CasinoSim() {
-    this.people = [];
+    var people = [];
     this.casinoGames = [];
     this.doodads = [];
 	var ticks = 0;
@@ -78,10 +77,10 @@ function CasinoSim() {
         if (this.pause)
             return true;
 
-        for (i in this.people) {
-            this.people[i].update();
-            if (this.people[i].gone == true) {
-                this.removeFromArray(this.people, this.people[i]);
+        for (i in people) {
+            people[i].update();
+            if (people[i].gone == true) {
+                this.removeFromArray(people, people[i]);
             }
         }
 
@@ -106,7 +105,7 @@ function CasinoSim() {
 			}
 		}
 		document.getElementById("casinoCash").innerHTML = "$"+this.cash;
-		document.getElementById("casinoAttendance").innerHTML = this.people.length;
+		document.getElementById("casinoAttendance").innerHTML = people.length;
 		document.getElementById("casinoPopularity").innerHTML = this.popularity+"%";
 
         return true;
@@ -114,9 +113,9 @@ function CasinoSim() {
 
     this.unselectAll = function () {
 		hideInfo();
-        for (i in this.people) {
-            this.people[i].selected = false;
-            this.people[i].element.className = this.people[i].element.className.replace(" selected", '');
+        for (i in people) {
+            people[i].selected = false;
+            people[i].element.className = people[i].element.className.replace(" selected", '');
         }
 
         for (i in this.casinoGames) {
@@ -146,7 +145,7 @@ function CasinoSim() {
     this.addPerson = function () {
         var newPerson = new Person();
         newPerson.init(doorX, doorY, "person");
-        this.people.push(newPerson);
+        people.push(newPerson);
     }
 
     this.addGame = function () {
@@ -322,7 +321,6 @@ function Person() {
 
     this.update = function () {
         if (this.cash > 500) {
-            alert("TEST")
             this.element.className = "highRoller";
             this.temperament = 5;
         }
