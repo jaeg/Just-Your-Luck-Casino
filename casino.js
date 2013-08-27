@@ -1,989 +1,649 @@
-//Fps variables
-var avgFramerate = 0;
-var frameCount = 0;
-var elapsedCounter = 0;
-var lastFrame = Date.now();
-var thisFrame;
-var elapsed;
+var casinoDiv = document.getElementById("casino");
 
-//Assets
-var personImage = new Image();
-personImage.src = "Person.png";
-var personHighRollerImage = new Image();
-personHighRollerImage.src = "PersonHighRoller.png";
+var mouseX = 0;
+var mouseY = 0;
+var somethingAtCursor = false;
 
-var doorImage = new Image();
-doorImage.src = "door.png";
+var maxWidth = 640;
+var maxHeight = 480;
+var doorX = 320;
+var doorY = 456;
 
-var floorImage = new Image();
-floorImage.src = "floor.png";
-var floorPattern = 0;
-floorImage.onload = function() {
-  var backgroundCanvas = document.getElementById("backgroundCanvas");
-  var backgroundContext = backgroundCanvas.getContext("2d");
-  floorPattern = backgroundContext.createPattern(floorImage,"repeat");
-  };
-  
-var slotsImage = new Image();
-slotsImage.src = "SlotMachine.png";
-var rouletteImage = new Image();
-rouletteImage.src = "roulettewheel.png";
-var blackjackImage = new Image();
-blackjackImage.src = "blackjack.png";
-var crapsImage = new Image();
-crapsImage.src = "craps.png";
+var startingAttendance = 10;
 
-var doodadImage = new Image();
-doodadImage.src = "doodads.png";
+var gameCosts = new Array();
+gameCosts['slots'] = 100;
+gameCosts['blackjack'] = 250;
+gameCosts['craps'] = 500;
+gameCosts['roulette'] = 150;
 
-
-//Constants
-  var StartingAttendance = 10;
-  var MaxAttendance = 500;
-  var MaxGames = 100;
-  var doorX = 320;
-  var doorY = 448;
-  
-//Events
-var goodEvents = new Array(2);
-goodEvents[0] = "You have won an award!  Here's your prize!";
-goodEvents[1] = "You are the most fun casino around!  Here's a bonus!";
-
-var badEvents = new Array(3);
-badEvents[0] = "Someone broke in and stole money!";
-badEvents[1] = "A slot machine malfunctioned and emptied its contents.";
-badEvents[2] = "A fee is being charged by the state.";
-
-//Game class
-function Game() {
-  this.stoppedRunning = false;
-  this.mX = 0;
-  this.mY = 0;
-  this.cursorMode = "move";
-  this.movingObject = 0;
-  this.pause = false;
-  this.selectedGame = 0;
-  
- 
-  //Canvas
-  this.backgroundCanvas = document.getElementById("backgroundCanvas");
-  this.backgroundContext = this.backgroundCanvas.getContext("2d");
-  this.midgroundCanvas = document.getElementById("midgroundCanvas");
-  this.midgroundContext = this.midgroundCanvas.getContext("2d");
-  this.forgroundCanvas = document.getElementById("forgroundCanvas");
-  this.forgroundContext = this.forgroundCanvas.getContext("2d");
-  
-  //Info Pane
-  this.personInfo = document.getElementById("personInfo");
-  this.casinoGameInfo = document.getElementById("gameInfo");
-  this.casinoInfo = document.getElementById("casinoInfo");
-  
-  //Constants
-  var gameCosts = new Array();
-  gameCosts['slots'] = 100;
-  gameCosts['blackjack'] = 250;
-  gameCosts['craps'] = 500;
-  gameCosts['roulette'] = 150;
-  
-  var ticks = 0;
-  
-  //Game specific variables
-
-  this.attendance = 0;
-  this.amountOfDoodads = 0;
-  this.people = new Array(MaxAttendance);
-  this.cash = 1000;
-  this.popularity = 50;
-  this.casinoGames = new Array(100);
-  
-  this.doodads = new Array(500);
-  
-  //Standard functions
-  this.init = function(){
-    for (var i = 0; i < MaxAttendance; i++) {
-      if (this.attendance < StartingAttendance){
-        this.people[i] = new Person();
-        this.people[i].init(doorX, doorY, this.forgroundContext);
-        this.attendance++;
-      }
-      else {
-        this.people[i] = 0;
-      }
+casinoDiv.addEventListener("mousemove", function (e) {
+    if (e.clientX < maxWidth - 16)
+        mouseX = e.clientX;
+    if (e.clientY < maxHeight - 16)
+        mouseY = e.clientY;
+    var cursorDiv = document.getElementById("cursor");
+    cursorDiv.style.left = (Math.round(mouseX / 16) * 16) + "px";
+    cursorDiv.style.top = (Math.round(mouseY / 16) * 16) + "px";
+    if (casinoSim.cursorMode == "create") {
+        cursorDiv.style.display = "block";
+    } else {
+        cursorDiv.style.display = "none";
     }
-    
-    for (var i = 0; i < MaxGames; i++) {
-      this.casinoGames[i] = 0;
-      
+}, false);
+
+casinoDiv.addEventListener('mousedown', function (e) {
+
+    if (casinoSim.cursorMode == "create" && somethingAtCursor == false) {
+        if (isNumber(casinoSim.creating))
+            casinoSim.addDoodad();
+        else
+            casinoSim.addGame();
     }
-    
-    for (var i = 0; i < 500; i++) {
-      this.doodads[i] = 0;
-      
+    if (somethingAtCursor == false) {
+        casinoSim.unselectAll();
     }
-    
-  }
-  
-  this.update = function(){
-    ticks++;
-    
-    if (this.popularity > 100) {
-      this.popularity = 100;
-    }
-    else if (this.popularity < 0) {
-      this.popularity = 0;
-    }
-    
-    if (this.pause == false) {
-      for (var i = 0; i < MaxAttendance; i++) {
-        if (this.people[i] != 0) {
-          this.people[i].update();
+    somethingAtCursor = false;
+}, false);
+
+function isNumber(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+//Classes
+
+function CasinoSim() {
+    var people = [];
+    this.casinoGames = [];
+    this.doodads = [];
+    var ticks = 0;
+    this.cursorMode = "select";
+    this.creating = 0;
+
+    this.cash = 100000;
+    this.popularity = 50;
+
+    this.init = function () {
+        for (var i = 0; i < startingAttendance; i++) {
+            this.addPerson();
         }
-        
-        if (this.people[i].gone == true){
-          delete this.people[i];
-          this.people[i] = 0;
-          this.attendance--;
+    }
+
+    this.update = function () {
+        ticks++;
+        if (this.pause)
+            return true;
+
+        for (i in people) {
+            people[i].update();
+            if (people[i].gone == true) {
+                this.removeFromArray(people, people[i]);
+            }
         }
-      }
-      
-      for (var i = 0; i < MaxGames; i++) {
-          if (this.casinoGames[i] != 0) {
+
+        for (i in this.casinoGames) {
             this.casinoGames[i].update();
-          }
-      }
-      
-      if (ticks%180 == 0) {
-      var roll = Math.random() * 100;
-      
-      if (this.popularity > roll) {
-        for (var i = 0; i < MaxAttendance; i++) {
-          if (this.people[i] == 0) {
-            this.people[i] = new Person();
-            this.people[i].init(doorX,doorY, this.forgroundContext);
-            this.attendance++;
-            break;
-          }
         }
-      }
-    }
-    
-    if (Math.random() < .0001)
-    {
-      var extraCash = Math.ceil(Math.random() * 200);
-      if (Math.random() > .5) {
-        alert(goodEvents[Math.floor(Math.random() * 2)]);
-        this.cash += extraCash;
-        alert("You gained $"+extraCash+"!");
-      }
-      else
-      {
-        alert(badEvents[Math.floor(Math.random() * 3)]);
-        this.cash -= extraCash;
-        alert("You lost $"+extraCash+"!");
-      }
-    } 
-    }
-    
 
-    
-    document.getElementById("casinoCash").innerHTML = "$"+this.cash;
-    document.getElementById("casinoAttendance").innerHTML = this.attendance;
-    document.getElementById("casinoPopularity").innerHTML = this.popularity+"%";
-  }
-  
-  this.draw = function(){
-    //Forground items
-    this.forgroundContext.clearRect( 0 , 0 , 640 , 480);
+        for (i in this.doodads) {
+            this.doodads[i].update();
+        }
 
-    for (var i = 0; i < MaxAttendance; i++) {
-      if (this.people[i] != 0) {
-        this.people[i].draw();
-      }
-    }
-    
-    this.forgroundContext.drawImage(doorImage,doorX,doorY);
-        
-    //Midground items
-    if (this.cursorMode == "move" ||this.cursorMode == "sell")
-    {
-      this.midgroundContext.clearRect( 0 , 0 , 640 , 480);
-    }
-    
-    for (var i = 0; i < MaxGames; i++) {
-      if (this.casinoGames[i] != 0) {
-        this.casinoGames[i].draw();
-      }
-    }
-    
-    
-    //Background items
-    this.backgroundContext.fillRect(0,0,640,480);
-    this.backgroundContext.fillStyle= floorPattern;
-    
-    for (var i = 0; i < 500; i++) {
-      if (this.doodads[i] != 0) {
-        this.doodads[i].draw();
-      }
-    }
-    
+        if (this.cash <= 0) {
+            alert("You have gone bankrupt!");
+            return false;
+        }
 
-    if (this.cash <= 0) {
-      this.forgroundContext.font = "30px Arial";
-      this.forgroundContext.fillStyle = "#0026FF";
-      this.forgroundContext.fillText("You have gone bankrupt!  Refresh to play again!", 0,240);
-      this.pause = true;
-    }
-  }
-  
-  this.run = function(){
-    this.update();
-    this.draw(); 
-  }
-  
-  //Event listeners
-  this.mouseClicked = function(e)
-  {
-    if (this.cursorMode == "select")
-    {
-      var noneSelected = true;
-      for (var i = 0; i < MaxGames; i++) {
-        if (this.casinoGames[i] != 0) {
-          if (this.mouseWithinBounds(this.casinoGames[i].x,this.casinoGames[i].y,this.casinoGames[i].width,this.casinoGames[i].height) && noneSelected == true) {
-            this.selectedGame = this.casinoGames[i];
-            this.casinoGames[i].selected = true;
-            noneSelected = false;
-            
-            document.getElementById("gameWinRate").value = this.casinoGames[i].winRate;
-            document.getElementById("gameCashOut").value = this.casinoGames[i].cashOut;
-            document.getElementById("gameCostToPlay").value = this.casinoGames[i].costToPlay;
-            document.getElementById("gameUpKeep").innerHTML = "$"+this.casinoGames[i].upKeep;
-            document.getElementById("gameMaxPlayers").innerHTML = this.casinoGames[i].maxPlayers;
+        if (ticks % 180 == 0) {
+            var roll = Math.random() * 100;
 
-            this.casinoInfo.style.display = 'none';
-            this.casinoGameInfo.style.display = 'block';
-            this.personInfo.style.display = 'none';
-          }
-          else
-          {
-            this.midgroundContext.clearRect( 0 , 0 , 640 , 480);
+            if (this.popularity > roll) {
+                this.addPerson();
+            }
+        }
+        document.getElementById("casinoCash").innerHTML = "$" + this.cash;
+        document.getElementById("casinoAttendance").innerHTML = people.length;
+        document.getElementById("casinoPopularity").innerHTML = this.popularity + "%";
+
+        return true;
+    }
+
+    this.unselectAll = function () {
+        hideInfo();
+        for (i in people) {
+            people[i].selected = false;
+            people[i].element.className = people[i].element.className.replace(" selected", '');
+        }
+
+        for (i in this.casinoGames) {
             this.casinoGames[i].selected = false;
-          }
+            this.casinoGames[i].element.className = this.casinoGames[i].element.className.replace(" selected", '');
         }
-      }
 
-        for (var i = 0; i < MaxAttendance; i++) {
-          if (this.people[i] != 0) {
-            if (this.mouseWithinBounds(this.people[i].x,this.people[i].y,16,16) && noneSelected == true) {
-              this.people[i].selected = true;
-              noneSelected = false;
-              
-              document.getElementById("personMood").innerHTML = this.people[i].mood+"%";
-              document.getElementById("personCash").innerHTML = "$"+this.people[i].cash;
-              document.getElementById("personThought").innerHTML = this.people[i].thought;
-              document.getElementById("personTemp").innerHTML = this.people[i].temperament;
-              
-              this.casinoInfo.style.display = 'none';
-              this.casinoGameInfo.style.display = 'none';
-              this.personInfo.style.display = 'block';
-            }
-            else
-            {
-              this.people[i].selected = false;
-            }
-          }
-        
-      }
+        for (i in this.doodads) {
+            this.doodads[i].selected = false;
+            this.doodads[i].element.className = this.doodads[i].element.className.replace(" selected", '');
+        }
+    }
 
-      
-      if (noneSelected == true) {
-        this.casinoInfo.style.display = 'block';
-        this.personInfo.style.display = 'none';
-        this.casinoGameInfo.style.display = 'none';
-      }
-    }
-    else if (this.cursorMode == "move")
-    {
-      if (this.movingObject == 0) {
-        
-        for (var i = 0; i < 500; i++) {  
-          if (this.doodads[i] != 0) {
-            if (this.mouseWithinBounds(this.doodads[i].x,this.doodads[i].y,16,16)) {
-              this.doodads[i].selected = true;
-              this.movingObject = this.doodads[i];
-            }
-            else
-            {
-              this.doodads[i].selected = false;
-            }
-          }
-        }
-        
-        for (var i = 0; i < MaxGames; i++) {
-          if (this.casinoGames[i] != 0) {
-            if (this.mouseWithinBounds(this.casinoGames[i].x,this.casinoGames[i].y,this.casinoGames[i].width,this.casinoGames[i].height)) {
-              if (this.movingObject != 0) {
-                this.movingObject.selected = false;
-              }
-              this.casinoGames[i].selected = true;
-              this.movingObject = this.casinoGames[i];
-              break;
-            }
-            else
-            {
-              this.casinoGames[i].selected = false;
-            }
-          }
-        }
-      }
-      else
-      {
-        this.movingObject.selected = false;
-        this.movingObject = 0;
-      }
-    }
-    else if (this.cursorMode == "sell")
-    {
-      for (var i = 0; i < 500; i++) {  
-        if (this.doodads[i] != 0) {
-          if (this.mouseWithinBounds(this.doodads[i].x,this.doodads[i].y,16,16)) {
-            if (confirm("Do you want to sell this decoration?"))
-            {
-              this.cash += 5;
-              delete this.doodads[i];
-              this.doodads[i] = 0;
-              break;
-            }
-          }
-        }
-      }
-      
-      for (var i = 0; i < MaxGames; i++) {
-        if (this.casinoGames[i] != 0) {
-          if (this.mouseWithinBounds(this.casinoGames[i].x,this.casinoGames[i].y,this.casinoGames[i].width,this.casinoGames[i].height)) {
-            if (confirm("Do you want to sell this game?"))
-            {
-              this.cash += gameCosts[this.casinoGames[i].type];
-              this.casinoGames[i].sold = true;
-              delete this.casinoGames[i];
-              this.casinoGames[i] = 0;
-              break;
-            }
-          }
-        }
-        
-      }
-      
-    }
-  }
-  
-  this.mouseMoved = function(e)
-  {
-    this.mX = e.pageX - this.forgroundCanvas.offsetLeft;
-    this.mY = e.pageY - this.forgroundCanvas.offsetTop;
-    if (this.cursorMode == "move") {
-      if (this.movingObject != 0) {
-        this.movingObject.x = Math.round(this.mX/16)*16;
-        this.movingObject.y = Math.round(this.mY/16)*16; 
-      }
-    }
-  }
-  
-  this.keyPress = function(e)
-  {
-    switch (String.fromCharCode(e.keyCode))
-    {
-      case "1":
-          this.addGame("slots");
-        break;
-      case "2":
-          this.addGame("roulette");
-        break;
-      case "3":
-          this.addGame("blackjack");
-        break;
-      case "4":
-          this.addGame("craps");
-        break;
-      case "5":
-          this.addDoodad(1);
-        break;
-      case "6":
-        this.addDoodad(0);
-        break;
-      case "7":
-        this.addDoodad(2);
-        break;
-      case "8":
-        this.addDoodad(3);
-        break;
-      case "9":
-        this.addDoodad(4);
-        break;
-    }
-  }
-      
-  this.mouseWithinBounds = function(x,y,width,height)
-  {
-    return x < this.mX && x+width > this.mX  && y < this.mY && y + height > this.mY;
-  }
-  
-  this.pauseGame = function()
-  {
-    if (this.pause == true) {
-      this.pause = false;
-    }
-    else
-    {
-      this.pause = true;
-    }
-  }
-  
-  this.saveCasinoGame = function()
-  {
-    this.selectedGame.winRate = parseFloat(document.getElementById("gameWinRate").value);
-    this.selectedGame.cashOut = parseFloat(document.getElementById("gameCashOut").value);
-    this.selectedGame.costToPlay =  parseFloat(document.getElementById("gameCostToPlay").value);
-  }
-  
-  this.addGame = function(newGame)
-  {
-    if (game.cash > gameCosts[newGame]) {
-      var noneCreated = true;
-      for (var i = 0; i < MaxGames; i++) {
-        if (this.casinoGames[i] == 0) {
-          this.casinoGames[i] = new CasinoGame();
-          this.casinoGames[i].setType(newGame);
-          this.changeCursorMode("move");
-          this.movingObject = this.casinoGames[i];
-          this.casinoGames[i].init(0,0,this.midgroundContext);
-          game.cash -= gameCosts[newGame];
-          noneCreated = false;
-          break;
-        }
-      }
-      if (noneCreated == true) {
-        alert("You have maxed out the number of games you can own.");
-      }
-    }
-    else
-    {
-      alert("If you buy anymore games you will go bankrupt.");
-    }
-  }
-  
-  this.addDoodad = function(doodad)
-  {
-    if (game.cash > 10) {
-      var noneCreated = true;
-      for (var i = 0; i < 500; i++) {
-        if (this.doodads[i] == 0) {
-          this.doodads[i] = new Doodad();
-          this.doodads[i].frame = doodad;
-          this.cursorMode = "move";
-          this.movingObject = this.doodads[i];
-          this.doodads[i].init(0,0,this.midgroundContext);
-          game.cash -= 10;
-          noneCreated = false;
-          this.amountOfDoodads++;
-          this.popularity += .5;
-          break;
-        }
-      }
-      if (noneCreated == true) {
-        alert("You have maxed out the number of decorations you can own.");
-      }
-    }
-    else
-    {
-      alert("If you buy anymore decorations you will go bankrupt.");
-   }
-  }
-  
-  this.changeCursorMode = function(mode)
-  {
-    this.cursorMode = mode;
-    this.movingObject.x = 0;
-    this.movingObject.y = 0;
-    this.movingObject = 0;
-    
-    var move = document.getElementById("move");
-    var select = document.getElementById("select");
-    var sell = document.getElementById("sell");
-    
-    if (this.cursorMode == "move") {
-      move.className = "buttonSelected";
-      select.className = "button";
-      sell.className = "button"; 
-    }
-    else if (this.cursorMode == "select") 
-    {
-      select.className = "buttonSelected";
-      move.className = "button";
-      sell.className = "button"; 
-    }
-    else
-    {
-      sell.className = "buttonSelected";
-      move.className = "button";
-      select.className = "button";  
-    }
-  }
-  
-  //Register event listeners
-  forgroundCanvas.addEventListener("mousedown",function(e){game.mouseClicked(e)},false);
-  forgroundCanvas.addEventListener("mousemove",function(e){game.mouseMoved(e)},false);
-  document.onkeydown = function(e){game.keyPress(e);};
+    this.addDoodad = function () {
+        if (10 < this.cash) {
+            var doodad = new Doodad();
+            doodad.init(Math.round(mouseX / 16) * 16, Math.round(mouseY / 16) * 16, "doodad");
 
+            doodad.setType(this.creating);
+            this.doodads.push(doodad);
+            this.cash -= 10;
+        } else {
+            alert("You will go bankrupt if you place anymore of these.");
+        }
+    }
+
+    this.addPerson = function () {
+        var newPerson = new Person();
+        newPerson.init(doorX, doorY, "person");
+        people.push(newPerson);
+    }
+
+    this.addGame = function () {
+        if (gameCosts[this.creating] < this.cash) {
+            var newGame = new CasinoGame();
+            newGame.init(Math.round(mouseX / 16) * 16, Math.round(mouseY / 16) * 16, "person");
+            newGame.setType(this.creating);
+            this.casinoGames.push(newGame);
+            this.cash -= gameCosts[this.creating];
+        } else {
+            alert("You will go bankrupt if you place anymore of these.");
+        }
+    }
+
+    this.saveCasinoGame = function () {
+        this.editing.winRate = parseFloat(document.getElementById("gameWinRate").value);
+        this.editing.cashOut = parseFloat(document.getElementById("gameCashOut").value);
+        this.editing.costToPlay = parseFloat(document.getElementById("gameCostToPlay").value);
+    }
+    this.createCursor = function (itemType) {
+        this.creating = itemType;
+        this.changeCursor("create");
+    }
+
+    this.pauseGame = function () {
+        if (this.pause == true) {
+            this.pause = false;
+        } else {
+            this.pause = true;
+        }
+    }
+
+    this.changeCursor = function (cursorMode) {
+        this.unselectAll();
+        this.cursorMode = cursorMode;
+        document.getElementById("move").className = "button";
+        document.getElementById("sell").className = "button";
+        document.getElementById("select").className = "button";
+
+        if (cursorMode == "move")
+            document.getElementById("move").className = "buttonSelected";
+        else if (cursorMode == "sell")
+            document.getElementById("sell").className = "buttonSelected";
+        else if (cursorMode == "select")
+            document.getElementById("select").className = "buttonSelected";
+    }
+
+    this.removeFromArray = function (array, item) {
+        index = array.indexOf(item);
+        if (index != -1) {
+            array.splice(index, 1);
+        }
+    }
 }
-//Entity base class
+
 function Entity() {
-  //Position
-  this.x = 0;
-  this.y = 0;
-  
-  //Canvas layer this drawable belongs to.
-  this.context = 0;
-  
-  this.init = function(x,y,context)
-  {
-    this.x = x;
-    this.y = y;
-    this.context = context;
-  };
-  
-  this.update = function()
-  {
-    
-  };
-  
-  this.draw = function()
-  {
-    
-  };
+    this.element = 0;
+    this.selected = false;
+    this.width = 16;
+    this.height = 16;
+    this.beingMoved = false;
+
+    this.init = function (x, y, myClass) {
+        this.element = document.createElement("div");
+        this.element.className = myClass;
+        this.element.setAttribute("name", myClass);
+        this.setPosition(x, y);
+        casinoDiv.appendChild(this.element);
+
+        var that = this;
+        this.element.addEventListener("mousedown", function (e) {
+            that.onMouseDown(e)
+        }, false);
+        this.element.addEventListener("mousemove", function (e) {
+            that.onMouseUp(e)
+        }, false);
+    }
+
+    this.setClass = function (newClass) {
+        this.element.className = newClass;
+    }
+
+    this.setPosition = function (x, y) {
+        this.element.style.left = x + "px";
+        this.element.style.top = y + "px";
+        this.element.style.zIndex = y;
+    }
+
+    this.getPosition = function () {
+        var x = parseInt(this.element.style.left, 10);
+        var y = parseInt(this.element.style.top, 10);
+        return {
+            x: x,
+            y: y
+        };
+    }
+
+    this.remove = function () {
+        casinoDiv.removeChild(this.element);
+    }
+
+
+    this.onMouseUp = function (e) {
+
+    }
+
+    this.onMouseMove = function (e) {
+
+    }
+
+    this.update = function (e) {
+
+    }
 }
+
+Entity.prototype.onMouseDown = function (e) {
+    var coords = this.getPosition();
+    somethingAtCursor = true;
+    casinoSim.unselectAll();
+    switch (casinoSim.cursorMode) {
+    case "select":
+        this.selected = true;
+        this.element.className = this.element.className + " selected";
+        break;
+    case "move":
+        if (this.element.className != "person") {
+            if (this.beingMoved == true) {
+                this.selected = false;
+                this.beingMoved = false;
+            } else {
+                this.element.className = this.element.className + " selected";
+                this.selected = true;
+                this.beingMoved = true;
+            }
+        }
+
+        break;
+    }
+}
+
+
+Person.prototype = new Entity();
+Person.prototype.parent = Entity.prototype;
 
 function Person() {
-  this.goalX = Math.floor((Math.random()*640));
-  this.goalY = Math.floor((Math.random()*480));
-  
-  this.thought = "wandering";
-  this.cash = Math.ceil(Math.random()*500);
-  if (Math.random() < game.popularity/100 && game.popularity > 70) {
-    this.cash += 2000; //High roller boost
-  }
-  this.mood = 100;
-  this.gameImPlaying = 0;
-  this.imPlayerNumber = 0;
-  
-  this.selected = false;
-  this.gone = false;
-  this.temperament  = Math.ceil(Math.random() * 3);
-  
-  this.frame = 0;
-  this.ticks = Math.floor(Math.random()*1000); //Add some variety
-  this.image = 0;
-  
-  if (this.cash > 500) {
-    this.image = personHighRollerImage;
-    this.temperament  = 5;
-  }
-  else
-  {
-    this.image = personImage;
-  }
-  
-  this.update = function()
-  {
-    this.ticks++;
-    if (this.mood > 100) {
-      this.mood = 100;
+    this.goalX = Math.floor((Math.random() * 624));
+    this.goalY = Math.floor((Math.random() * 464));
+    this.thought = "wandering";
+    this.gone = false;
+    this.gameImPlaying = 0;
+    this.playerNumber = 0;
+    this.temperament = Math.ceil(Math.random() * 3);
+    this.cash = 100; //Math.ceil(Math.random()*500);
+    var frame = 1;
+    var ticks = 0;
+    this.mood = 100;
+
+
+    this.onMouseDown = function (e) {
+        this.parent.onMouseDown.call(this);
+        if (casinoSim.cursorMode == "select") {
+            showInfo();
+            document.getElementById("gameInfo").style.display = "none";
+            document.getElementById("personInfo").style.display = "block";
+            document.getElementById("personMood").innerHTML = this.mood + "%";
+            document.getElementById("personCash").innerHTML = "$" + this.cash;
+            document.getElementById("personThought").innerHTML = this.thought;
+            document.getElementById("personTemp").innerHTML = this.temperament;
+        }
     }
-    //The person state machine
-    switch (this.thought)
-    {
-      case "wandering":
-        if (this.closeToGoal()) {
-          this.goalX = Math.floor((Math.random()*640));
-          this.goalY = Math.floor((Math.random()*480));
+
+    this.update = function () {
+        if (this.cash > 500) {
+            this.element.className = "highRoller";
+            this.temperament = 5;
         }
-        
-        if (this.cash <= 0 || this.mood <= 0)
-        {
-          this.thought = "leave";
-        }
-        
-        if (this.ticks%30 == 0) {
-          this.mood-= Math.ceil(this.temperament  / 2);
-        }
-        
-        if (this.ticks%120 == 0) {
-          this.thought = "findGameToPlay";
-        }
-      
-        this.move();
-        
-        //Decide if I want to play something here
-        break;
-      
-      case "findGameToPlay":
-          //Search for a free game here.
-          for (var i = 0; i < MaxGames; i++) {
-            if (game.casinoGames[i] != 0)
-            {
-              if (game.casinoGames[i].currentPlayers < game.casinoGames[i].maxPlayers  && game.casinoGames[i].costToPlay < this.cash && game.casinoGames[i] != game.movingObject) {
-                this.gameImPlaying = game.casinoGames[i];
-                this.thought = "moveToGame";
-                break;
-              }
-            }
-          }
-        if (this.gameImPlaying == 0)
-        {
-          this.thought = "wandering";
-          this.mood -= this.temperament ; //I'm upset because I couldn't find a game to play.
-          game.popularity--;
-        }
-        
-        break;
-      
-      case "moveToGame":
-        this.goalX = this.gameImPlaying.x;
-        this.goalY = this.gameImPlaying.y;
-        this.move();
-      
-        if (this.closeToGoal()) {
-          //Check if game is still free
-          if (this.gameImPlaying.currentPlayers >= this.gameImPlaying.maxPlayers) {
+        ticks++;
+        this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
+
+        if (this.gameImPlaying.sold == true || this.gameImPlaying.moving == true) {
+            gameImPlaying.currentPlayers--;
             this.gameImPlaying = 0;
-            this.thought = "findGameToPlay";
-            this.mood -=  Math.ceil(this.temperament  / 2);  //I didn't make it in time and now I'm sad.
-          }
-          else
-          {
-            this.thought="playGame";
-            this.imPlayerNumber = this.gameImPlaying.currentPlayers;
-            this.gameImPlaying.currentPlayers++;   
-          }
+            this.thought = "wandering";
+        }
 
-        }
-        break;
-      
-      //Position myself on the game and play it
-      case "playGame":
-        //The game has been moved on me!
-        this.frame = 1;
-        if (this.gameImPlaying.sold == true) {
-          delete this.gameImPlaying;
-          this.gameImPlaying = 0;
-          this.thought = "wandering";  
-        }
-        if (this.goalX != this.gameImPlaying.x || this.goalY != this.gameImPlaying.y) {
-          this.gameImPlaying.currentPlayers--;
-          this.gameImPlaying = 0;
-          this.thought = "findGameToPlay";
-          break;
-        }
-        
-        if (this.gameImPlaying.height > 16) {
-          this.y = this.gameImPlaying.y+16;
-          this.x = this.gameImPlaying.x+16*this.imPlayerNumber;
-        }
-        
-        if (this.cash < this.gameImPlaying.costToPlay) {
-          this.thought = "wandering";
-          this.gameImPlaying.currentPlayers -= 1;
-          this.gameImPlaying = 0;
-        }
-        
-        if (this.ticks%60 == 0) {
-          //Play da game!
-          this.cash -= this.gameImPlaying.costToPlay;
-          game.cash += this.gameImPlaying.costToPlay;
-          if (this.gameImPlaying.didIWin() == true) {
-            this.cash += this.gameImPlaying.cashOut;
-            this.mood += 10;
-            game.popularity++;
-          }
-          else
-          {
-            this.mood -=  Math.ceil(this.temperament  / 2);
-          }
-        }
-        
         if (this.mood <= 0) {
-          this.thought = "leave";
-          this.gameImPlaying.currentPlayers -= 1;
-          this.gameImPlaying = 0;
+            this.thought = "leave";
         }
-        break;
-      
-      case "leave":
-        this.goalX = doorX+16;
-        this.goalY = doorY+16;
-      
-        if (this.closeToGoal()) {
-          if (this.mood <= 30)
-          {
-            game.popularity -= 5;
-            if (this.temperament  > 4) {
-              game.popularity -= 5;
+
+        switch (this.thought) {
+        case "wandering":
+            this.move();
+            if (this.closeToGoal()) {
+                this.goalX = Math.floor((Math.random() * 640));
+                this.goalY = Math.floor((Math.random() * 480));
+                this.thought = "findGameToPlay";
             }
-          }
-          this.gone = true;
+            if (this.cash <= 0) {
+                this.thought = "leave";
+            }
+            break;
+        case "findGameToPlay":
+            for (var i in casinoSim.casinoGames) {
+                if (casinoSim.casinoGames[i].currentPlayers < casinoSim.casinoGames[i].maxPlayers && casinoSim.casinoGames[i].costToPlay < this.cash && casinoSim.casinoGames[i].moving == false) {
+                    this.gameImPlaying = casinoSim.casinoGames[i];
+                    this.thought = "movetogame";
+                    break;
+                }
+            }
+            if (this.gameImPlaying == 0) {
+                this.thought = "wandering";
+                this.mood -= this.temperament; //I'm upset because I couldn't find a game to play.
+            }
+            break;
+        case "movetogame":
+            this.goalX = this.gameImPlaying.getPosition().x;
+            this.goalY = this.gameImPlaying.getPosition().y;
+            this.move();
+
+            if (this.gameImPlaying.currentPlayers >= this.gameImPlaying.maxPlayers) {
+                this.thought = "wandering";
+                this.gameImPlaying = 0;
+                this.goalX = Math.floor((Math.random() * 640));
+                this.goalY = Math.floor((Math.random() * 480));
+            } else if (this.closeToGoal()) {
+                this.thought = "playgame";
+                this.playerNumber = this.gameImPlaying.currentPlayers;
+                this.gameImPlaying.currentPlayers++;
+            }
+            break;
+        case "playgame":
+            frame = 1;
+            if (this.gameImPlaying.height > 16) {
+                this.setPosition(this.gameImPlaying.getPosition().x + 16 * this.playerNumber, this.gameImPlaying.getPosition().y + 16);
+            } else {
+                this.setPosition(this.goalX, this.goalY + 1);
+            }
+            if (ticks % 60 == 0) {
+                this.cash -= this.gameImPlaying.costToPlay;
+                if (this.gameImPlaying.didIWin()) {
+                    casinoSim.cash -= this.gameImPlaying.cashOut;
+                    this.cash += this.gameImPlaying.cashOut;
+                    this.mood += 10;
+                } else {
+                    this.mood -= this.temperament;
+                }
+            }
+            if (this.cash < this.gameImPlaying.costToPlay) {
+                this.thought = "wandering";
+                this.gameImPlaying.currentPlayers--;
+                this.gameImPlaying = 0;
+            }
+
+            break;
+
+        case "leave":
+            this.goalX = doorX;
+            this.goalY = doorY;
+            this.move();
+
+            if (this.closeToGoal()) {
+                if (this.gone == false) {
+                    this.remove();
+                    if (this.mood > 70) {
+                        casinoSim.popularity += 2;
+                    } else {
+                        casinoSim.popularity -= this.temperament;
+                    }
+                    this.gone = true;
+                }
+            }
+            break;
         }
-        
-        this.move();
-        break;
-    }
-  };
-  this.draw = function()
-  {
-    if (this.selected == true) {
-        this.context.fillStyle="#54FF29";
-        this.context.fillRect(this.x-1,this.y-1,18,18);
-    }
-    
-    //this.context.drawImage(personImage,this.x,this.y);
-    this.context.drawImage(this.image, 16 * this.frame, 0, 16, 16, this.x, this.y, 16, 16);
-  };
-  
-  this.move = function()
-  {
-    //Simple movement
-    if (this.x > this.goalX) {
-      this.x -= 1;
-      this.frame = 2;
-    }
-    else if (this.x < this.goalX) {
-      this.x += 1;
-      this.frame = 3;
+
     }
 
-    if (this.y > this.goalY) {
-      this.y -= 1;
-      this.frame = 1;
+    this.move = function () {
+        var coords = this.getPosition();
+        //Simple movement
+        if (coords.x > this.goalX) {
+            coords.x -= 1;
+            frame = 2;
+        } else if (coords.x < this.goalX) {
+            coords.x += 1;
+            frame = 3;
+        }
+
+        if (coords.y > this.goalY) {
+            coords.y -= 1;
+            frame = 1;
+        } else if (coords.y < this.goalY) {
+            coords.y += 1;
+            frame = 0;
+        }
+        this.setPosition(coords.x, coords.y);
     }
-    else if (this.y < this.goalY) {
-      this.y += 1;
-      this.frame = 0;
+
+    this.closeToGoal = function () {
+        var coords = this.getPosition();
+        return (Math.abs(coords.x - this.goalX) < 1 && Math.abs(coords.y - this.goalY) < 1);
     }
-  }
-  
-  this.closeToGoal = function()
-  {
-    return (Math.abs(this.x - this.goalX) < 1 && Math.abs(this.y - this.goalY) < 1);
-  }
 }
-Person.prototype = new Entity();
 
+
+CasinoGame.prototype = new Entity();
+CasinoGame.prototype.parent = Entity.prototype;
 
 function CasinoGame() {
-  //Stat variables
-  this.winRate = .5;
-  this.cashOut = 100;
-  this.costToPlay = 0;
-  this.upKeep = 0;
-  this.maxPlayers = 0;
-  this.type = "";
-  this.sold = false;
-  
-  this.width = 16;
-  this.height = 16;
-  
-  //Animation Variables
-  this.frame = 0;
-  this.ticks = 0;
-  this.frameCount = 0;
-  
-  this.selected = false;
-  
-  //State Variables
-  this.currentPlayers = 0;
-  this.currentLoses = 0;
-  this.currentWins = 0;
-  
+    var frame = 0;
+    var maxFrame = 1;
+    var ticks = 0;
+    //Stat variables
+    this.winRate = .5;
+    this.cashOut = 100;
+    this.costToPlay = 0;
+    this.upKeep = 0;
+    this.maxPlayers = 0;
+    this.sold = false;
+    this.currentPlayers = 0;
+    this.currentLoses = 0;
+    this.currentWins = 0;
+    this.type = "";
+    this.editing = 0;
 
-  
-  this.setType = function(type)
-  {
-    this.type = type;
-    switch (type) {
-      case "slots":
-        this.frameCount = 1;
-        this.maxPlayers = 1;
-        this.upKeep = 1;
-        this.costToPlay = 1;
-        this.cashOut = 10;
-        this.winRate = .1;
-        break;
-      case "roulette":
-        this.frameCount = 2;
-        this.maxPlayers = 5;
-        this.width = 32;
-        this.height = 32;
-        this.upKeep = 4.5;
-        this.costToPlay = 15;
-        this.cashOut = 20;
-        this.winRate = .3
-        break;
-    case "blackjack":
-        this.frameCount = 2;
-        this.maxPlayers = 3;
-        this.width = 32;
-        this.height = 32;
-        this.upKeep = 2;
-        this.costToPlay = 15;
-        this.cashOut = 20;
-        this.winRate = .3
-        break;
- 
-    case "craps":
-        this.frameCount = 2;
-        this.maxPlayers = 6;
-        this.width = 32;
-        this.height = 32;
-        this.upKeep = 3;
-        this.costToPlay = 15;
-        this.cashOut = 20;
-        this.winRate = .3
-        break;
-    }
-  }
-  
-  this.update = function()
-  {
-    this.ticks++;
-    if (this.ticks > 60)
-    {
-      if (this.currentPlayers > 0) {
-        this.frame++;
-      }
-      else
-      {
-        this.frame = 0;
-      }
-      
-      game.cash += this.currentLoses*this.costToPlay - this.currentWins*this.cashOut - this.upKeep;
-      this.currentLoses = 0;
-      this.currentWins = 0;
-      this.ticks = 0;
+    this.onMouseDown = function (e) {
+        this.parent.onMouseDown.call(this);
+        if (casinoSim.cursorMode == "sell") {
+            if (confirm("Do you want to sell this for $" + gameCosts[this.type] / 2 + "?")) {
+                casinoSim.cash += gameCosts[this.type] / 2;
+                this.sold = true;
+                casinoSim.removeFromArray(casinoSim.casinoGames, this);
+                this.remove();
+            }
+        } else if (casinoSim.cursorMode == "select") {
+            showInfo();
+            document.getElementById("gameInfo").style.display = "block";
+            document.getElementById("personInfo").style.display = "none";
+            casinoSim.editing = this;
+
+            document.getElementById("gameWinRate").value = this.winRate;
+            document.getElementById("gameCashOut").value = this.cashOut;
+            document.getElementById("gameCostToPlay").value = this.costToPlay;
+            document.getElementById("gameUpKeep").innerHTML = "$" + this.upKeep;
+            document.getElementById("gameMaxPlayers").innerHTML = this.maxPlayers;
+        }
     }
 
-    
-    if (this.frame >= this.frameCount) {
-      this.frame = 0;
+    this.update = function () {
+        ticks++;
+        if (ticks % 60 == 0) {
+            frame++;
+
+            casinoSim.cash -= this.upKeep;
+        }
+        if (frame >= frameCount || this.currentPlayers == 0) {
+            frame = 0;
+        }
+
+        this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
+
+        if (this.selected == true && casinoSim.cursorMode == "move") {
+            this.setPosition(Math.round(mouseX / 16) * 16, Math.round(mouseY / 16) * 16);
+        }
     }
-  };
-  
-  this.draw = function()
-  {
-    if (this.selected == true) {
-      this.context.fillStyle="#54FF29";
-      this.context.fillRect(this.x-1,this.y-1,this.width+2,this.height+2);
+
+    this.didIWin = function () {
+        var roll = Math.random();
+        if (this.winRate < roll) {
+            return false;
+        } else {
+            return true;
+        }
     }
-    var image = 0;
-    switch (this.type) {
-      case "slots":
-        image = slotsImage;
-        break;
-      case "roulette":
-        image = rouletteImage;
-        break;
-      case "blackjack":
-        image = blackjackImage;
-        break;
-      case "craps":
-        image = crapsImage;
-        break;
+
+    this.setType = function (type) {
+        this.setClass(type);
+        this.type = type;
+        switch (type) {
+        case "slots":
+            frameCount = 1;
+            this.maxPlayers = 1;
+            this.upKeep = 1;
+            this.costToPlay = 1;
+            this.cashOut = 10;
+            this.winRate = .1;
+            break;
+        case "roulette":
+            frameCount = 2;
+            this.maxPlayers = 5;
+            this.width = 32;
+            this.height = 32;
+            this.upKeep = 4.5;
+            this.costToPlay = 50;
+            this.cashOut = 20;
+            this.winRate = .3
+            break;
+        case "blackjack":
+            frameCount = 2;
+            this.maxPlayers = 3;
+            this.width = 32;
+            this.height = 32;
+            this.upKeep = 2;
+            this.costToPlay = 15;
+            this.cashOut = 20;
+            this.winRate = .3
+            break;
+
+        case "craps":
+            frameCount = 2;
+            this.maxPlayers = 6;
+            this.width = 32;
+            this.height = 32;
+            this.upKeep = 3;
+            this.costToPlay = 15;
+            this.cashOut = 20;
+            this.winRate = .3
+            break;
+
+        }
     }
-    
-    this.context.drawImage(image, this.width * this.frame, 0, this.width, this.height, this.x, this.y, this.width, this.height);
-  };
-  
-  this.didIWin = function()
-  {
-    var roll = Math.random();
-    if (this.winRate < roll) {
-      this.currentLoses++;
-      return false;
-    }
-    else
-    {
-      this.currentWins++;
-      return true;
-    }
-  }
 }
-CasinoGame.prototype = new Entity();
+
+Doodad.prototype = new Entity();
+Doodad.prototype.parent = Entity.prototype;
 
 function Doodad() {
-  this.frame = 0;
-  this.selected = false;
-  this.draw = function()
-  {
-    if (this.selected == true) {
-      this.context.fillStyle="#54FF29";
-      this.context.fillRect(this.x-1,this.y-1,18,18);
+    var frame = 0;
+    this.width = 16;
+    this.height = 16;
+
+    this.onMouseDown = function (e) {
+        this.parent.onMouseDown.call(this);
+        if (casinoSim.cursorMode == "sell") {
+            if (confirm("Do you want to sell this for $5?")) {
+                casinoSim.cash += 5;
+                this.remove();
+            }
+        }
     }
-    
-    this.context.drawImage(doodadImage, 16 * this.frame, 0, 16, 16, this.x, this.y, 16, 16);
-  };
+
+    this.update = function () {
+        this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
+        if (this.selected == true && casinoSim.cursorMode == "move") {
+            this.setPosition(Math.round(mouseX / 16) * 16, Math.round(mouseY / 16) * 16);
+        }
+    }
+
+    this.setType = function (type) {
+        frame = type;
+    }
 }
-Doodad.prototype = new Entity();
+
+
+function showInfo() {
+    var info = document.getElementById("infoBox");
+    info.style.width = "500px";
+    info.style.left = "300px";
+    info.style.opacity = 1;
+}
+
+function hideInfo() {
+    var info = document.getElementById("infoBox");
+    info.style.width = "0px";
+    info.style.left = "500px";
+    info.style.opacity = 0;
+}
+
 //***************************
 //****Initialize*************
 //***************************
-var game = new Game();
-
 
 function StartGame() {
-  game.init();
-  run();
+    casinoSim.init();
+    casinoSim.changeCursor("select");
+    Run();
 }
-
 
 /**
  * requestAnim shim layer by Paul Irish
  * Finds the first API that works to optimize the animation loop,
  * otherwise defaults to setTimeout().
  */
-window.requestAnimFrame = (function(){
-  return  window.requestAnimationFrame   ||
-      window.webkitRequestAnimationFrame ||
-      window.mozRequestAnimationFrame    ||
-      window.oRequestAnimationFrame      ||
-      window.msRequestAnimationFrame     ||
-      function(/* function */ callback, /* DOMElement */ element){
-        window.setTimeout(callback, 1000 / 60);
-      };
+window.requestAnimFrame = (function () {
+    return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function ( /* function */ callback, /* DOMElement */ element) {
+            window.setTimeout(callback, 1000 / 60);
+    };
 })();
 
-function run() {
-  //Fps stuff
-  thisFrame = Date.now();
-  elapsed = thisFrame - lastFrame;
-  lastFrame = thisFrame;
-  var span = document.getElementById('fps-text').innerHTML =avgFramerate;
-  
-  //Game running
-  game.run();
-  if (game.stoppedRunning == false)
-  {
-    requestAnimFrame( run );
-  }
-  
-  //FPS Stuff
-  frameCount++;
-  elapsedCounter += elapsed;
-   
-  if (elapsedCounter > 1000) {
-    elapsedCounter -= 1000;
-    avgFramerate = frameCount;
-    frameCount = 0;
-  }
+function Run() {
+    //Game running
+
+    if (casinoSim.update()) {
+        requestAnimFrame(Run);
+    }
 }
 
-
 //Start the game already!
+var casinoSim = new CasinoSim();
 StartGame();
-game.changeCursorMode('select');
