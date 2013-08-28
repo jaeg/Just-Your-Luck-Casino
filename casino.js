@@ -363,6 +363,10 @@ function Person() {
         if (this.mood <= 0) {
             this.thought = "leave";
         }
+        
+        if (this.mood > 100) {
+            this.mood = 100;
+        }
 
         switch (this.thought) {
         case "wandering":
@@ -378,7 +382,7 @@ function Person() {
             break;
         case "findGameToPlay":
             for (var i in casinoSim.casinoGames) {
-                if (casinoSim.casinoGames[i].currentPlayers < casinoSim.casinoGames[i].maxPlayers && casinoSim.casinoGames[i].costToPlay < this.cash && casinoSim.casinoGames[i].beingMoved == false) {
+                if (casinoSim.casinoGames[i].currentPlayers < casinoSim.casinoGames[i].maxPlayers && casinoSim.casinoGames[i].costToPlay <= this.cash && casinoSim.casinoGames[i].beingMoved == false) {
                     this.gameImPlaying = casinoSim.casinoGames[i];
                     this.thought = "movetogame";
                     break;
