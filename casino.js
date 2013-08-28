@@ -4,10 +4,13 @@ var mouseX = 0;
 var mouseY = 0;
 var somethingAtCursor = false;
 
-var maxWidth = 640;
-var maxHeight = 480;
+var maxWidth = parseInt(casinoDiv.style.width, 10);
+var maxHeight = parseInt(casinoDiv.style.height, 10);
+
+var casinoOffsetX =  parseInt(casinoDiv.style.left, 10);
+var casinoOffsetY =  parseInt(casinoDiv.style.top, 10);
 var doorX = 320;
-var doorY = 456;
+var doorY = 450;
 
 var startingAttendance = 10;
 
@@ -28,13 +31,16 @@ badEvents[1] = "A slot machine malfunctioned and emptied its contents.";
 badEvents[2] = "A fee is being charged by the state.";
 
 casinoDiv.addEventListener("mousemove", function (e) {
-    if (e.clientX < maxWidth - 16)
+    if (e.clientX < maxWidth + casinoOffsetX - 32)
         mouseX = e.clientX;
-    if (e.clientY < maxHeight - 16)
+
+    if (e.clientY < maxHeight + casinoOffsetY - 32)
         mouseY = e.clientY;
+   
     var cursorDiv = document.getElementById("cursor");
-    cursorDiv.style.left = (Math.round(mouseX / 16) * 16) + "px";
-    cursorDiv.style.top = (Math.round(mouseY / 16) * 16) + "px";
+    cursorDiv.style.left = (Math.round(mouseX / 16) * 16) - casinoOffsetX + "px";
+    cursorDiv.style.top = (Math.round(mouseY / 16) * 16) - casinoOffsetY + "px";
+    
     if (casinoSim.cursorMode == "create") {
         cursorDiv.style.display = "block";
     } else {
@@ -72,7 +78,7 @@ function CasinoSim() {
     this.paused = false;
 
     this.cash = 100000;
-    this.popularity = 1000;
+    this.popularity = 50;
 
     this.init = function () {
         for (var i = 0; i < startingAttendance; i++) {
@@ -159,7 +165,7 @@ function CasinoSim() {
     this.addDoodad = function () {
         if (10 < this.cash) {
             var doodad = new Doodad();
-            doodad.init(Math.round(mouseX / 16) * 16, Math.round(mouseY / 16) * 16, "doodad");
+            doodad.init((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY, "doodad");
 
             doodad.setType(this.creating);
             this.doodads.push(doodad);
@@ -178,7 +184,7 @@ function CasinoSim() {
     this.addGame = function () {
         if (gameCosts[this.creating] < this.cash) {
             var newGame = new CasinoGame();
-            newGame.init(Math.round(mouseX / 16) * 16, Math.round(mouseY / 16) * 16, "person");
+            newGame.init((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY, "person");
             newGame.setType(this.creating);
             this.casinoGames.push(newGame);
             this.cash -= gameCosts[this.creating];

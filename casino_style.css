@@ -1,23 +1,36 @@
+html {
+    background-color: #FFA400;
+}
 #casino {
+    position: absolute;
 	width:640px;
 	height: 480px;
 	background:url("img/Floor.png");
 }
 
+#container {
+    height: 710px;
+    width: 870px;
+    background-color: #A66F00;
+}
 #menu {
-		width: 640px;
-		height: 200px;
+		width: 630px;
+		height: 190px;
 		position:absolute;
-		top: 500px;
+        padding: 5px;
+		top: 505px;
+        left: 15px;
+        background-color: #FFCD73
 }
 
 #info {
-		width: 200px;
-		height: 480px;
+		width: 190px;
+		height: 470px;
 		position: absolute;
-		left: 660px;
-		top: 0px;
-		border-style:solid;
+        padding: 5px;
+		left: 665px;
+		top: 15px;
+        background-color:#FFBB40;
 }
 
 #infoBox {
@@ -25,15 +38,22 @@
 		width: 0px;
 		overflow: hidden;
 		opacity: 0;
-		background-color:green;
-		transition-duration: 2s;
-		-moz-transition: 2s;
-		-ms-transition: 2s;
-		-webkit-transition: 2s;
+		background-color:#FFAA00;
+		transition-duration: 1s;
+		-moz-transition: 1s;
+		-ms-transition: 1s;
+		-webkit-transition: 1s;
 		position:absolute;
 		z-index: 99999;
 		left: 525px;
 		top: 100px;
+        border-radius: 10px;
+}
+
+#infoInner {
+    height: 180px;
+    margin: 10px;
+    background-color: #FFD073;
 }
 
 .person {
@@ -54,7 +74,8 @@
 		width: 32px;
 		height: 32px;
 		left:320px;
-		top: 456px;
+		top: 450px;
+        z-index: 9999;
 		position:absolute;
 		background:url(img/door.png) ;
 }
@@ -113,27 +134,28 @@
 }
 
 .button {
-    background-color:red;
+    background-color: #1240AB;
+    color:white;
     margin: 3px;
     padding: 2px;
     display: inline-block;
     border-radius: 6px;
-    transition: background-color .6s;
+    transition: background-color .4s;
     
 }
 .button:hover {
-    background-color:orange; 
+    background-color:#4671D5; 
 }
 
 .button:active{
-    background-color: #781313;
+    background-color: #06266f;
     transition: background-color 0.1s;
 }
 
 .buttonSelected {
-    background-color:orange;
+    background-color:#4671D5;
     border-style: dashed;
-    border-color: green;
+    border-color: white;
     margin: 3px;
     padding: 2px;
     display: inline-block;
