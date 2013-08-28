@@ -72,7 +72,7 @@ function CasinoSim() {
     this.paused = false;
 
     this.cash = 100000;
-    this.popularity = 50;
+    this.popularity = 1000;
 
     this.init = function () {
         for (var i = 0; i < startingAttendance; i++) {
@@ -235,22 +235,6 @@ function Entity() {
     this.height = 16;
     this.beingMoved = false;
 
-    this.init = function (x, y, myClass) {
-        this.element = document.createElement("div");
-        this.element.className = myClass;
-        this.element.setAttribute("name", myClass);
-        this.setPosition(x, y);
-        casinoDiv.appendChild(this.element);
-
-        var that = this;
-        this.element.addEventListener("mousedown", function (e) {
-            that.onMouseDown(e)
-        }, false);
-        this.element.addEventListener("mousemove", function (e) {
-            that.onMouseUp(e)
-        }, false);
-    }
-
     this.setClass = function (newClass) {
         this.element.className = newClass;
     }
@@ -287,6 +271,22 @@ function Entity() {
 
     }
 }
+Entity.prototype.init = function(x, y, myClass) {
+        this.element = document.createElement("div");
+        this.element.className = myClass;
+        this.element.setAttribute("name", myClass);
+        this.setPosition(x, y);
+        casinoDiv.appendChild(this.element);
+
+        var that = this;
+        this.element.addEventListener("mousedown", function (e) {
+            that.onMouseDown(e)
+        }, false);
+        this.element.addEventListener("mousemove", function (e) {
+            that.onMouseUp(e)
+        }, false);
+}
+    
 
 Entity.prototype.onMouseDown = function (e) {
     var coords = this.getPosition();
@@ -332,10 +332,8 @@ function Person() {
     var frame = 1;
     var ticks = 0;
     this.mood = 100;
-    if (this.cash > 500) {
-      this.element.className = "highRoller";
-      this.temperament = 5;
-    }
+    this.editing = 0;
+    
 
     this.onMouseDown = function (e) {
         this.parent.onMouseDown.call(this);
@@ -351,6 +349,12 @@ function Person() {
     }
 
     this.update = function () {
+        if (ticks == 0) {
+            if (this.cash > 500) {
+                this.element.className = "highRoller";
+                this.temperament = 5;
+            }   
+        }
         ticks++;
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 
@@ -399,7 +403,7 @@ function Person() {
             this.move();
 
             if (this.gameImPlaying.currentPlayers >= this.gameImPlaying.maxPlayers) {
-                this.thought = "wandering";
+                this.thought = "findGameToPlay";
                 this.gameImPlaying = 0;
                 this.goalX = Math.floor((Math.random() * 640));
                 this.goalY = Math.floor((Math.random() * 480));
@@ -422,12 +426,15 @@ function Person() {
                     casinoSim.cash -= this.gameImPlaying.cashOut;
                     this.cash += this.gameImPlaying.cashOut;
                     this.mood += 10;
+                    if (this.mood > 70) {
+                        casinoSim.popularity++;
+                    }
                 } else {
                     this.mood -= this.temperament;
                 }
             }
             if (this.cash < this.gameImPlaying.costToPlay) {
-                this.thought = "wandering";
+                this.thought = "findGameToPlay";
                 this.gameImPlaying.currentPlayers--;
                 this.gameImPlaying = 0;
             }
@@ -443,7 +450,7 @@ function Person() {
                 if (this.gone == false) {
                     this.remove();
                     if (this.mood > 70) {
-                        casinoSim.popularity += 2;
+                        casinoSim.popularity += 1;
                     } else {
                         casinoSim.popularity -= this.temperament;
                     }
@@ -501,7 +508,7 @@ function CasinoGame() {
     this.currentLoses = 0;
     this.currentWins = 0;
     this.type = "";
-    this.editing = 0;
+    
 
     this.onMouseDown = function (e) {
         this.parent.onMouseDown.call(this);
