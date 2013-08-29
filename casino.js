@@ -88,6 +88,10 @@ function CasinoSim() {
 
     this.update = function () {
         ticks++;
+		
+		if (this.popularity > 100) {
+			this.popularity = 100;
+		}
         if (this.pause)
             return true;
 
@@ -154,11 +158,13 @@ function CasinoSim() {
         for (i in this.casinoGames) {
             this.casinoGames[i].selected = false;
             this.casinoGames[i].element.className = this.casinoGames[i].element.className.replace(" selected", '');
+			this.casinoGames[i].beingMoved = false;
         }
 
         for (i in this.doodads) {
             this.doodads[i].selected = false;
             this.doodads[i].element.className = this.doodads[i].element.className.replace(" selected", '');
+			this.doodads[i].beingMoved = false;
         }
     }
 
@@ -363,12 +369,14 @@ function Person() {
         }
         ticks++;
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
-
-        if (this.gameImPlaying.sold == true || this.gameImPlaying.beingMoved == true) {
-            gameImPlaying.currentPlayers--;
-            this.gameImPlaying = 0;
-            this.thought = "wandering";
-        }
+		if (this.gameImPlaying != 0)
+		{
+			if (this.gameImPlaying.sold == true || this.gameImPlaying.beingMoved == true) {
+				this.gameImPlaying.currentPlayers--;
+				this.gameImPlaying = 0;
+				this.thought = "wandering";
+			}
+		}
 
         if (this.mood <= 0) {
             this.thought = "leave";
@@ -540,20 +548,24 @@ function CasinoGame() {
     }
 
     this.update = function () {
+		console.log(this.currentPlayers);
         ticks++;
         if (ticks % 60 == 0) {
             frame++;
-
             casinoSim.cash -= this.upKeep;
         }
-        if (frame >= frameCount || this.currentPlayers == 0) {
+        if (frame >= frameCount || this.currentPlayers <= 0) {
             frame = 0;
         }
+		
+		if (this.currentPlayers < 0) {
+			this.currentPlayers = 0;
+		}
 
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 
         if (this.selected == true && casinoSim.cursorMode == "move") {
-            this.setPosition(Math.round(mouseX / 16) * 16, Math.round(mouseY / 16) * 16);
+            this.setPosition((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY);
         }
     }
 
@@ -635,7 +647,7 @@ function Doodad() {
     this.update = function () {
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
         if (this.selected == true && casinoSim.cursorMode == "move") {
-            this.setPosition(Math.round(mouseX / 16) * 16, Math.round(mouseY / 16) * 16);
+            this.setPosition((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY);
         }
     }
 
