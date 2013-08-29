@@ -31,11 +31,11 @@ badEvents[1] = "A slot machine malfunctioned and emptied its contents.";
 badEvents[2] = "A fee is being charged by the state.";
 
 casinoDiv.addEventListener("mousemove", function (e) {
-    if (e.clientX < maxWidth + casinoOffsetX - 32)
-        mouseX = e.clientX;
+    if (e.pageX < maxWidth + casinoOffsetX - 16)
+        mouseX = e.pageX;
 
-    if (e.clientY < maxHeight + casinoOffsetY - 32)
-        mouseY = e.clientY;
+    if (e.pageY < maxHeight + casinoOffsetY - 16)
+        mouseY = e.pageY;
    
     var cursorDiv = document.getElementById("cursor");
     cursorDiv.style.left = (Math.round(mouseX / 16) * 16) - casinoOffsetX + "px";
@@ -303,7 +303,7 @@ Entity.prototype.init = function(x, y, myClass) {
 Entity.prototype.onMouseDown = function (e) {
     var coords = this.getPosition();
     somethingAtCursor = true;
-    casinoSim.unselectAll();
+    //casinoSim.unselectAll();
     switch (casinoSim.cursorMode) {
     case "select":
         this.selected = true;
@@ -314,6 +314,7 @@ Entity.prototype.onMouseDown = function (e) {
             if (this.beingMoved == true) {
                 this.selected = false;
                 this.beingMoved = false;
+				this.element.className = people[i].element.className.replace(" selected", '');
             } else {
                 this.element.className = this.element.className + " selected";
                 this.selected = true;
@@ -390,8 +391,8 @@ function Person() {
         case "wandering":
             this.move();
             if (this.closeToGoal()) {
-                this.goalX = Math.floor((Math.random() * 640));
-                this.goalY = Math.floor((Math.random() * 480));
+                this.goalX = Math.floor((Math.random() * 624));
+                this.goalY = Math.floor((Math.random() * 464));
                 this.thought = "findGameToPlay";
             }
             if (this.cash <= 0) {

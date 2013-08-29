@@ -1,11 +1,21 @@
-html {
-    background-color: #FFA400;
-}
 #casino {
     position: absolute;
 	width:640px;
 	height: 480px;
-	background:url("img/Floor.png");
+	/*background:url("img/Floor.png");*/
+	background-color: #ffa554;
+	background-size: 32px 32px;
+	background-position: 0 0, 16px 16px;
+	background-image: -webkit-linear-gradient(45deg, #ffecb3 25%, transparent 25%, transparent 75%, #ffecb3 75%, #ffecb3),
+					  -webkit-linear-gradient(45deg, #ffecb3 25%, transparent 25%, transparent 75%, #ffecb3 75%, #ffecb3);
+	background-image: -moz-linear-gradient(45deg, #ffecb3 25%, transparent 25%, transparent 75%, #ffecb3 75%, #ffecb3),
+					  -moz-linear-gradient(45deg, #ffecb3 25%, transparent 25%, transparent 75%, #ffecb3 75%, #ffecb3);
+	background-image: linear-gradient(45deg, #ffecb3 25%, transparent 25%, transparent 75%, #ffecb3 75%, #ffecb3),
+					  linear-gradient(45deg, #ffecb3 25%, transparent 25%, transparent 75%, #ffecb3 75%, #ffecb3);
+	-pie-background: linear-gradient(45deg, #ffecb3 25%, transparent 25%, transparent 75%, #ffecb3 75%, #ffecb3) 0 0 / 60px,
+					 linear-gradient(45deg, #ffecb3 25%, transparent 25%, transparent 75%, #ffecb3 75%, #ffecb3) 30px 30px / 60px,
+					 #ffa554;
+	behavior: url(/pie/PIE.htc);
 }
 
 #container {
