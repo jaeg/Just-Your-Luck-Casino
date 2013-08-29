@@ -519,8 +519,6 @@ function CasinoGame() {
     this.maxPlayers = 0;
     this.sold = false;
     this.currentPlayers = 0;
-    this.currentLoses = 0;
-    this.currentWins = 0;
     this.type = "";
     
 
@@ -548,7 +546,6 @@ function CasinoGame() {
     }
 
     this.update = function () {
-		console.log(this.currentPlayers);
         ticks++;
         if (ticks % 60 == 0) {
             frame++;
@@ -558,13 +555,11 @@ function CasinoGame() {
             frame = 0;
         }
 		
-		if (this.currentPlayers < 0) {
-			this.currentPlayers = 0;
-		}
 
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 
         if (this.selected == true && casinoSim.cursorMode == "move") {
+			this.currentPlayers = 0;
             this.setPosition((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY);
         }
     }
