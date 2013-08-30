@@ -57,6 +57,7 @@ casinoDiv.addEventListener('mousedown', function (e) {
             casinoSim.addGame();
     }
     if (somethingAtCursor == false) {
+		hideInfo();
         casinoSim.unselectAll();
     }
     somethingAtCursor = false;
@@ -150,7 +151,6 @@ function CasinoSim() {
     }
 
     this.unselectAll = function () {
-        hideInfo();
         for (i in people) {
             people[i].selected = false;
             people[i].element.className = people[i].element.className.replace(" selected", '');
@@ -220,6 +220,7 @@ function CasinoSim() {
 
     this.changeCursor = function (cursorMode) {
         this.unselectAll();
+		hideInfo();
         this.cursorMode = cursorMode;
         document.getElementById("move").className = "button";
         document.getElementById("sell").className = "button";
@@ -308,7 +309,6 @@ function Entity() {
 Entity.prototype.onMouseDown = function (e) {
     var coords = this.getPosition();
     somethingAtCursor = true;
-    //casinoSim.unselectAll();
     switch (casinoSim.cursorMode) {
     case "select":
         this.selected = true;
@@ -708,6 +708,7 @@ function showInfo() {
 }
 
 function hideInfo() {
+	casinoSim.unselectAll();
     var info = document.getElementById("infoBox");
     info.style.width = "0px";
     info.style.left = "500px";
