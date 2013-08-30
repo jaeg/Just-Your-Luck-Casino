@@ -2,6 +2,8 @@ var casinoDiv = document.getElementById("casino");
 
 var mouseX = 0;
 var mouseY = 0;
+var cursorX = 0;
+var cursorY = 0;
 var somethingAtCursor = false;
 
 var maxWidth = parseInt(casinoDiv.style.width, 10);
@@ -38,8 +40,10 @@ casinoDiv.addEventListener("mousemove", function (e) {
         mouseY = e.pageY;
    
     var cursorDiv = document.getElementById("cursor");
-    cursorDiv.style.left = (Math.round((mouseX - casinoOffsetX)/ 16) * 16)  + "px";
-    cursorDiv.style.top = (Math.round((mouseY - casinoOffsetY)/ 16) * 16)  + "px";
+    cursorX = (Math.round((mouseX - casinoOffsetX)/ 16) * 16);
+    cursorY = (Math.round((mouseY - casinoOffsetY)/ 16) * 16)
+    cursorDiv.style.left =  cursorX + "px";
+    cursorDiv.style.top = cursorY  + "px";
     
     if (casinoSim.cursorMode == "create") {
         cursorDiv.style.display = "block";
@@ -50,7 +54,7 @@ casinoDiv.addEventListener("mousemove", function (e) {
 
 casinoDiv.addEventListener('mousedown', function (e) {
 
-    if (casinoSim.cursorMode == "create" && somethingAtCursor == false) {
+    if (casinoSim.cursorMode == "create" && somethingAtCursor == false && (Math.round(mouseX / 16) * 16) - casinoOffsetX < 624 && (Math.round(mouseY / 16) * 16) - casinoOffsetY < 448) {
         if (isNumber(casinoSim.creating))
             casinoSim.addDoodad();
         else
@@ -172,7 +176,7 @@ function CasinoSim() {
     this.addDoodad = function () {
         if (10 < this.cash) {
             var doodad = new Doodad();
-            doodad.init((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY, "doodad");
+            doodad.init(cursorX,cursorY,"doodad");//((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY, "doodad");
 
             doodad.setType(this.creating);
             this.doodads.push(doodad);
@@ -185,13 +189,14 @@ function CasinoSim() {
     function addPerson() {
         var newPerson = new Person();
         newPerson.init(doorX, doorY, "person");
+        newPerson.personInit();
         people.push(newPerson);
     }
 
     this.addGame = function () {
         if (gameCosts[this.creating] < this.cash) {
             var newGame = new CasinoGame();
-            newGame.init((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY, "person");
+            newGame.init(cursorX,cursorY,"person");//((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY, "person");
             newGame.setType(this.creating);
             this.casinoGames.push(newGame);
             this.cash -= gameCosts[this.creating];
@@ -252,8 +257,15 @@ function Entity() {
 
     this.init = function(x, y, myClass) {
         this.element = document.createElement("div");
-        this.element.className = myClass;
-        this.element.setAttribute("name", myClass);
+        
+        if (this.element.className == '') {
+            this.element.className = myClass;
+        }
+        else
+        {
+            alert(this.element.className);
+        }
+    
 		x = Math.round(x/16)*16;
 		y = Math.round(y/16)*16;
         this.setPosition(x, y);
@@ -346,6 +358,7 @@ function Person() {
     this.playerNumber = 0;
     this.temperament = Math.ceil(Math.random() * 3);
     this.cash = Math.ceil(Math.random()*500);
+    
     if (Math.random() < casinoSim.popularity/100 && casinoSim.popularity > 70) {
       this.cash += 2000; //High roller boost
     }
@@ -353,10 +366,25 @@ function Person() {
     var ticks = Math.floor(Math.random()*1000);
     this.mood = 100;
 	this.moving = false;
-	
+    
     var oldPos = {x:0,y:0};
 	
 	var nextBlock = {horz:0,vert:0};
+    
+    this.personInit = function()
+    {
+        if (Math.random() > .5) {
+            this.element.className = "person";
+        }
+        else
+        {
+            this.element.className = "personFemale";
+        }
+        
+        if (this.cash > 500) {
+        this.element.className = "highRoller";
+        this.temperament = 5;}  
+    }
 
     this.onMouseDown = function (e) {
         this.parent.onMouseDown.call(this);
@@ -372,13 +400,6 @@ function Person() {
     }
 
     this.update = function () {
-        if (ticks == 0) {
-			this.findNextBlock(this.getPosition());
-            if (this.cash > 500) {
-                this.element.className = "highRoller";
-                this.temperament = 5;
-            }   
-        }
         ticks++;
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 		if (this.gameImPlaying != 0)
@@ -604,7 +625,7 @@ function CasinoGame() {
 
         if (this.selected == true && casinoSim.cursorMode == "move") {
 			this.currentPlayers = 0;
-            this.setPosition((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY);
+            this.setPosition(cursorX,cursorY);//((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY);
         }
     }
 

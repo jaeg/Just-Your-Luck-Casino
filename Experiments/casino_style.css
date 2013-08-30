@@ -2,6 +2,7 @@
     position: absolute;
 	width:640px;
 	height: 480px;
+    overflow: hidden;
 	/*background:url("img/Floor.png");*/
 	background-color: #ffa554;
 	background-size: 32px 32px;
@@ -69,6 +70,13 @@
 }
 
 .person {
+	width: 16px;
+	height: 16px;
+	position:absolute;
+	background:url(img/Person.png);
+}
+
+.personFemale {
 	width: 16px;
 	height: 16px;
 	position:absolute;
