@@ -21,6 +21,7 @@ gameCosts['slots'] = 100;
 gameCosts['blackjack'] = 250;
 gameCosts['craps'] = 500;
 gameCosts['roulette'] = 150;
+gameCosts['poker'] = 150;
 
 //Events
 var goodEvents = new Array(2);
@@ -672,6 +673,17 @@ function CasinoGame() {
             break;
 
         case "craps":
+            frameCount = 2;
+            this.maxPlayers = 6;
+            this.width = 32;
+            this.height = 32;
+            this.upKeep = 3;
+            this.costToPlay = 15;
+            this.cashOut = 20;
+            this.winRate = .3
+            break;
+        
+        case "poker":
             frameCount = 2;
             this.maxPlayers = 6;
             this.width = 32;

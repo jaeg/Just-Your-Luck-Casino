@@ -3,7 +3,6 @@
 	width:640px;
 	height: 480px;
     overflow: hidden;
-	/*background:url("img/Floor.png");*/
 	background-color: #ffa554;
 	background-size: 32px 32px;
 	background-position: 0 0, 16px 16px;
@@ -22,7 +21,7 @@
 #container {
     height: 745px;
     width: 655px;
-    background: url(img/wall.png);
+    background: #FFCD73;
 	box-shadow: 10px 10px 10px #888888;
 }
 #menu {
@@ -100,13 +99,6 @@
 		background:url(img/door.png) ;
 }
 
-.casinoGame {
-	width: 16px;
-	height: 16px;
-	background-color:blue;
-	position:absolute;
-}
-
 .slots {
 		width: 16px;
 		height: 16px;
@@ -118,7 +110,7 @@
 		width: 32px;
 		height: 32px;
 		position:absolute;
-		background:url(img/roulettewheel.png) ;
+		background:url(img/roulette.png) ;
 }
 .blackjack {
 		width: 32px;
@@ -131,6 +123,13 @@
 		height: 32px;
 		position:absolute;
 		background:url(img/craps.png);
+}
+
+.poker {
+		width: 32px;
+		height: 32px;
+		position:absolute;
+		background:url(img/poker.png);
 }
 
 .doodad {
