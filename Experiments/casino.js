@@ -253,8 +253,8 @@ function Entity() {
         this.element = document.createElement("div");
         this.element.className = myClass;
         this.element.setAttribute("name", myClass);
-        x = Math.round(x/16)*16;
-        y = Math.round(y/16)*16;
+		x = Math.round(x/16)*16;
+		y = Math.round(y/16)*16;
         this.setPosition(x, y);
         casinoDiv.appendChild(this.element);
 
@@ -337,8 +337,9 @@ Person.prototype.parent = Entity.prototype;
 
 function Person() {
     this.isCollidable = false;
-    this.goalX = Math.floor((Math.random() * 624));
-    this.goalY = Math.floor((Math.random() * 464));
+    this.goalX = Math.round(Math.random() * 624 / 16) * 16;
+    this.goalY = Math.round(Math.random() * 464 / 16) * 16;//Math.floor((Math.random() * 464));
+	
     this.thought = "wandering";
     this.gone = false;
     this.gameImPlaying = 0;
@@ -349,37 +350,13 @@ function Person() {
       this.cash += 2000; //High roller boost
     }
     var frame = 1;
-    var ticks = 0;
+    var ticks = Math.floor(Math.random()*1000);
     this.mood = 100;
-    this.editing = 0;
+	this.moving = false;
+	
     var oldPos = {x:0,y:0};
-    this.collisionOccurred = function() {
-      myPos = this.getPosition();
-      var collisions = {left:0,right:0,top:0,bottom:0};
-      for (var i = 0; i < casinoSim.casinoGames.length; i++) {
-        other = casinoSim.casinoGames[i];
-        if (other != this.gameImPlaying && other.beingMoved == false)
-        {
-            otherPos = casinoSim.casinoGames[i].getPosition();
-            if (!(otherPos.x > myPos.x + this.width || myPos.x > otherPos.x + other.width || otherPos.y > myPos.y + this.height || myPos.y > otherPos.y + other.height))
-            {
-            if (myPos.x < otherPos.x && otherPos.x < myPos.x + this.width && myPos.x + this.width < otherPos.x + other.width)
-              collisions.left = 1;
-            if (otherPos.x < myPos.x && myPos.x < otherPos.x + other.width && otherPos.x + other.width < myPos.x + this.width)
-              collisions.right = 1;
-            if (myPos.y < otherPos.y && otherPos.y < myPos.y + this.height && myPos.y + this.height < otherPos.y + other.height)
-              collisions.top = 1;
-            if (otherPos.y < myPos.y && myPos.y < otherPos.y + other.height && otherPos.y + other.height < myPos.y + this.height)
-              collisions.bottom = 1;
-              
-            return collisions;
-            }
-          
-        }
-      }
-      return collisions;
-    }
-    
+	
+	var nextBlock = {horz:0,vert:0};
 
     this.onMouseDown = function (e) {
         this.parent.onMouseDown.call(this);
@@ -396,6 +373,7 @@ function Person() {
 
     this.update = function () {
         if (ticks == 0) {
+			this.findNextBlock(this.getPosition());
             if (this.cash > 500) {
                 this.element.className = "highRoller";
                 this.temperament = 5;
@@ -424,10 +402,14 @@ function Person() {
         case "wandering":
             this.move();
             if (this.closeToGoal()) {
-                this.goalX = Math.floor((Math.random() * 624));
-                this.goalY = Math.floor((Math.random() * 464));
+                this.goalX = Math.round(Math.random() * 624 / 16) * 16;
+                this.goalY = Math.round(Math.random() * 464 / 16) * 16;
                 this.thought = "findGameToPlay";
             }
+			if (ticks % 180 == 0)
+			{
+				this.mood -= this.temperament;
+			}
             if (this.cash <= 0) {
                 this.thought = "leave";
             }
@@ -453,8 +435,8 @@ function Person() {
             if (this.gameImPlaying.currentPlayers >= this.gameImPlaying.maxPlayers) {
                 this.thought = "findGameToPlay";
                 this.gameImPlaying = 0;
-                this.goalX = Math.floor((Math.random() * 640));
-                this.goalY = Math.floor((Math.random() * 480));
+                this.goalX = Math.round(Math.random() * 624 / 16) * 16;
+                this.goalY = Math.round(Math.random() * 464 / 16) * 16;
             } else if (this.closeToGoal()) {
                 this.thought = "playgame";
                 this.playerNumber = this.gameImPlaying.currentPlayers;
@@ -509,36 +491,59 @@ function Person() {
         }
 
     }
+	
+	this.findNextBlock = function(coords)
+	{
+		if (ticks%12 == 0)
+		{
+			nextBlock = {horz:0,vert:0};
+			//Simple movement
+			if (coords.x > this.goalX) {
+				//coords.x -= 1;
+				nextBlock.horz = -1;
+				frame = 2;
+			} else if (coords.x < this.goalX) {
+				nextBlock.horz = 1;
+				frame = 3;
+			}
+			else if (coords.y > this.goalY) {
+				nextBlock.vert = -1;
+				frame = 1;
+			} else if (coords.y < this.goalY) {
+				nextBlock.vert = 1;
+				frame = 0;
+			}
+
+			this.moving = true;
+		}
+		else
+		{
+			this.moving = false;
+		}
+	}
 
     this.move = function () {
         var coords = this.getPosition();
-        var collision = this.collisionOccurred();
-
-        //Simple movement
-        if (coords.x > this.goalX) {
-            coords.x -= 1;
-            frame = 2;
-        } else if (coords.x < this.goalX) {
-            coords.x += 1;
-            frame = 3;
-        }
-
-        if (coords.y > this.goalY) {
-            coords.y -= 1;
-            frame = 1;
-        } else if (coords.y < this.goalY) {
-            coords.y += 1;
-            frame = 0;
-        }
-        
-
-        oldPos = this.getPosition();
+		
+		if (coords.x%16 == 0 && coords.y%16 == 0)
+		{
+			this.findNextBlock(coords);
+			//this.moving = false;
+			coords.x = Math.floor(coords.x/16)*16;
+			coords.y = Math.floor(coords.y/16)*16;
+		}
+		
+		if (this.moving == true) 
+		{
+			coords.x += nextBlock.horz;
+			coords.y += nextBlock.vert;
+		}
         this.setPosition(coords.x, coords.y);
     }
 
     this.closeToGoal = function () {
         var coords = this.getPosition();
-        return (Math.abs(coords.x - this.goalX) < 1 && Math.abs(coords.y - this.goalY) < 1);
+        return (Math.abs(coords.x - this.goalX) < 16 && Math.abs(coords.y - this.goalY) < 16);
     }
 }
 
