@@ -2,8 +2,6 @@ var casinoDiv = document.getElementById("casino");
 
 var mouseX = 0;
 var mouseY = 0;
-var cursorX = 0;
-var cursorY = 0;
 var somethingAtCursor = false;
 
 var maxWidth = parseInt(casinoDiv.style.width, 10);
@@ -21,7 +19,6 @@ gameCosts['slots'] = 100;
 gameCosts['blackjack'] = 250;
 gameCosts['craps'] = 500;
 gameCosts['roulette'] = 150;
-gameCosts['poker'] = 150;
 
 //Events
 var goodEvents = new Array(2);
@@ -41,10 +38,8 @@ casinoDiv.addEventListener("mousemove", function (e) {
         mouseY = e.pageY;
    
     var cursorDiv = document.getElementById("cursor");
-    cursorX = (Math.round((mouseX - casinoOffsetX)/ 16) * 16);
-    cursorY = (Math.round((mouseY - casinoOffsetY)/ 16) * 16)
-    cursorDiv.style.left =  cursorX + "px";
-    cursorDiv.style.top = cursorY  + "px";
+    cursorDiv.style.left = (Math.round((mouseX - casinoOffsetX)/ 16) * 16)  + "px";
+    cursorDiv.style.top = (Math.round((mouseY - casinoOffsetY)/ 16) * 16)  + "px";
     
     if (casinoSim.cursorMode == "create") {
         cursorDiv.style.display = "block";
@@ -55,14 +50,13 @@ casinoDiv.addEventListener("mousemove", function (e) {
 
 casinoDiv.addEventListener('mousedown', function (e) {
 
-    if (casinoSim.cursorMode == "create" && somethingAtCursor == false && (Math.round(mouseX / 16) * 16) - casinoOffsetX < 624 && (Math.round(mouseY / 16) * 16) - casinoOffsetY < 448) {
+    if (casinoSim.cursorMode == "create" && somethingAtCursor == false) {
         if (isNumber(casinoSim.creating))
             casinoSim.addDoodad();
         else
             casinoSim.addGame();
     }
     if (somethingAtCursor == false) {
-		hideInfo();
         casinoSim.unselectAll();
     }
     somethingAtCursor = false;
@@ -156,6 +150,7 @@ function CasinoSim() {
     }
 
     this.unselectAll = function () {
+        hideInfo();
         for (i in people) {
             people[i].selected = false;
             people[i].element.className = people[i].element.className.replace(" selected", '');
@@ -177,7 +172,7 @@ function CasinoSim() {
     this.addDoodad = function () {
         if (10 < this.cash) {
             var doodad = new Doodad();
-            doodad.init(cursorX,cursorY,"doodad");//((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY, "doodad");
+            doodad.init((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY, "doodad");
 
             doodad.setType(this.creating);
             this.doodads.push(doodad);
@@ -190,14 +185,13 @@ function CasinoSim() {
     function addPerson() {
         var newPerson = new Person();
         newPerson.init(doorX, doorY, "person");
-        newPerson.personInit();
         people.push(newPerson);
     }
 
     this.addGame = function () {
         if (gameCosts[this.creating] < this.cash) {
             var newGame = new CasinoGame();
-            newGame.init(cursorX,cursorY,"person");//((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY, "person");
+            newGame.init((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY, "person");
             newGame.setType(this.creating);
             this.casinoGames.push(newGame);
             this.cash -= gameCosts[this.creating];
@@ -226,7 +220,6 @@ function CasinoSim() {
 
     this.changeCursor = function (cursorMode) {
         this.unselectAll();
-		hideInfo();
         this.cursorMode = cursorMode;
         document.getElementById("move").className = "button";
         document.getElementById("sell").className = "button";
@@ -258,17 +251,10 @@ function Entity() {
 
     this.init = function(x, y, myClass) {
         this.element = document.createElement("div");
-        
-        if (this.element.className == '') {
-            this.element.className = myClass;
-        }
-        else
-        {
-            alert(this.element.className);
-        }
-    
-		x = Math.round(x/16)*16;
-		y = Math.round(y/16)*16;
+        this.element.className = myClass;
+        this.element.setAttribute("name", myClass);
+        x = Math.round(x/16)*16;
+        y = Math.round(y/16)*16;
         this.setPosition(x, y);
         casinoDiv.appendChild(this.element);
 
@@ -322,6 +308,7 @@ function Entity() {
 Entity.prototype.onMouseDown = function (e) {
     var coords = this.getPosition();
     somethingAtCursor = true;
+    //casinoSim.unselectAll();
     switch (casinoSim.cursorMode) {
     case "select":
         this.selected = true;
@@ -350,42 +337,49 @@ Person.prototype.parent = Entity.prototype;
 
 function Person() {
     this.isCollidable = false;
-    this.goalX = Math.round(Math.random() * 624 / 16) * 16;
-    this.goalY = Math.round(Math.random() * 464 / 16) * 16;//Math.floor((Math.random() * 464));
-	
+    this.goalX = Math.floor((Math.random() * 624));
+    this.goalY = Math.floor((Math.random() * 464));
     this.thought = "wandering";
     this.gone = false;
     this.gameImPlaying = 0;
     this.playerNumber = 0;
     this.temperament = Math.ceil(Math.random() * 3);
     this.cash = Math.ceil(Math.random()*500);
-    
     if (Math.random() < casinoSim.popularity/100 && casinoSim.popularity > 70) {
       this.cash += 2000; //High roller boost
     }
     var frame = 1;
-    var ticks = Math.floor(Math.random()*1000);
+    var ticks = 0;
     this.mood = 100;
-	this.moving = false;
-    
+    this.editing = 0;
     var oldPos = {x:0,y:0};
-	
-	var nextBlock = {horz:0,vert:0};
-    
-    this.personInit = function()
-    {
-        if (Math.random() > .5) {
-            this.element.className = "person";
-        }
-        else
+    this.collisionOccurred = function() {
+      myPos = this.getPosition();
+      var collisions = {left:0,right:0,top:0,bottom:0};
+      for (var i = 0; i < casinoSim.casinoGames.length; i++) {
+        other = casinoSim.casinoGames[i];
+        if (other != this.gameImPlaying && other.beingMoved == false)
         {
-            this.element.className = "personFemale";
+            otherPos = casinoSim.casinoGames[i].getPosition();
+            if (!(otherPos.x > myPos.x + this.width || myPos.x > otherPos.x + other.width || otherPos.y > myPos.y + this.height || myPos.y > otherPos.y + other.height))
+            {
+            if (myPos.x < otherPos.x && otherPos.x < myPos.x + this.width && myPos.x + this.width < otherPos.x + other.width)
+              collisions.left = 1;
+            if (otherPos.x < myPos.x && myPos.x < otherPos.x + other.width && otherPos.x + other.width < myPos.x + this.width)
+              collisions.right = 1;
+            if (myPos.y < otherPos.y && otherPos.y < myPos.y + this.height && myPos.y + this.height < otherPos.y + other.height)
+              collisions.top = 1;
+            if (otherPos.y < myPos.y && myPos.y < otherPos.y + other.height && otherPos.y + other.height < myPos.y + this.height)
+              collisions.bottom = 1;
+              
+            return collisions;
+            }
+          
         }
-        
-        if (this.cash > 500) {
-        this.element.className = "highRoller";
-        this.temperament = 5;}  
+      }
+      return collisions;
     }
+    
 
     this.onMouseDown = function (e) {
         this.parent.onMouseDown.call(this);
@@ -401,6 +395,12 @@ function Person() {
     }
 
     this.update = function () {
+        if (ticks == 0) {
+            if (this.cash > 500) {
+                this.element.className = "highRoller";
+                this.temperament = 5;
+            }   
+        }
         ticks++;
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 		if (this.gameImPlaying != 0)
@@ -424,14 +424,10 @@ function Person() {
         case "wandering":
             this.move();
             if (this.closeToGoal()) {
-                this.goalX = Math.round(Math.random() * 624 / 16) * 16;
-                this.goalY = Math.round(Math.random() * 464 / 16) * 16;
+                this.goalX = Math.floor((Math.random() * 624));
+                this.goalY = Math.floor((Math.random() * 464));
                 this.thought = "findGameToPlay";
             }
-			if (ticks % 180 == 0)
-			{
-				this.mood -= this.temperament;
-			}
             if (this.cash <= 0) {
                 this.thought = "leave";
             }
@@ -457,8 +453,8 @@ function Person() {
             if (this.gameImPlaying.currentPlayers >= this.gameImPlaying.maxPlayers) {
                 this.thought = "findGameToPlay";
                 this.gameImPlaying = 0;
-                this.goalX = Math.round(Math.random() * 624 / 16) * 16;
-                this.goalY = Math.round(Math.random() * 464 / 16) * 16;
+                this.goalX = Math.floor((Math.random() * 640));
+                this.goalY = Math.floor((Math.random() * 480));
             } else if (this.closeToGoal()) {
                 this.thought = "playgame";
                 this.playerNumber = this.gameImPlaying.currentPlayers;
@@ -513,59 +509,36 @@ function Person() {
         }
 
     }
-	
-	this.findNextBlock = function(coords)
-	{
-		if (ticks%12 == 0)
-		{
-			nextBlock = {horz:0,vert:0};
-			//Simple movement
-			if (coords.x > this.goalX) {
-				//coords.x -= 1;
-				nextBlock.horz = -1;
-				frame = 2;
-			} else if (coords.x < this.goalX) {
-				nextBlock.horz = 1;
-				frame = 3;
-			}
-			else if (coords.y > this.goalY) {
-				nextBlock.vert = -1;
-				frame = 1;
-			} else if (coords.y < this.goalY) {
-				nextBlock.vert = 1;
-				frame = 0;
-			}
-
-			this.moving = true;
-		}
-		else
-		{
-			this.moving = false;
-		}
-	}
 
     this.move = function () {
         var coords = this.getPosition();
-		
-		if (coords.x%16 == 0 && coords.y%16 == 0)
-		{
-			this.findNextBlock(coords);
-			//this.moving = false;
-			coords.x = Math.floor(coords.x/16)*16;
-			coords.y = Math.floor(coords.y/16)*16;
-		}
-		
-		if (this.moving == true) 
-		{
-			coords.x += nextBlock.horz;
-			coords.y += nextBlock.vert;
-		}
+        var collision = this.collisionOccurred();
+
+        //Simple movement
+        if (coords.x > this.goalX) {
+            coords.x -= 1;
+            frame = 2;
+        } else if (coords.x < this.goalX) {
+            coords.x += 1;
+            frame = 3;
+        }
+
+        if (coords.y > this.goalY) {
+            coords.y -= 1;
+            frame = 1;
+        } else if (coords.y < this.goalY) {
+            coords.y += 1;
+            frame = 0;
+        }
+        
+
+        oldPos = this.getPosition();
         this.setPosition(coords.x, coords.y);
     }
 
     this.closeToGoal = function () {
         var coords = this.getPosition();
-        return (Math.abs(coords.x - this.goalX) < 16 && Math.abs(coords.y - this.goalY) < 16);
+        return (Math.abs(coords.x - this.goalX) < 1 && Math.abs(coords.y - this.goalY) < 1);
     }
 }
 
@@ -626,7 +599,7 @@ function CasinoGame() {
 
         if (this.selected == true && casinoSim.cursorMode == "move") {
 			this.currentPlayers = 0;
-            this.setPosition(cursorX,cursorY);//((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY);
+            this.setPosition((Math.round(mouseX / 16) * 16) - casinoOffsetX, (Math.round(mouseY / 16) * 16) - casinoOffsetY);
         }
     }
 
@@ -673,17 +646,6 @@ function CasinoGame() {
             break;
 
         case "craps":
-            frameCount = 2;
-            this.maxPlayers = 6;
-            this.width = 32;
-            this.height = 32;
-            this.upKeep = 3;
-            this.costToPlay = 15;
-            this.cashOut = 20;
-            this.winRate = .3
-            break;
-        
-        case "poker":
             frameCount = 2;
             this.maxPlayers = 6;
             this.width = 32;
@@ -741,7 +703,6 @@ function showInfo() {
 }
 
 function hideInfo() {
-	casinoSim.unselectAll();
     var info = document.getElementById("infoBox");
     info.style.width = "0px";
     info.style.left = "500px";
