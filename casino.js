@@ -52,7 +52,12 @@ casinoDiv.addEventListener("mousemove", function (e) {
 }, false);
 
 casinoDiv.addEventListener('mousedown', function (e) {
-    if (casinoSim.cursorMode == "create" && somethingAtCursor == false && cursorX < 640 && cursorY < 480) {
+    if (casinoSim.cursorMode == "create" && cursorX < 640 && cursorY < 480) {
+        for (var i = 0; i < casinoSim.casinoGames.length; i++) {
+            var pos = casinoSim.casinoGames[i].getPosition();
+            if (pos.x == cursorX && pos.y == cursorY)
+                return;
+        }
         if (isNumber(casinoSim.creating))
             casinoSim.addDoodad();
         else
@@ -267,9 +272,6 @@ function Entity() {
         var that = this;
         this.element.addEventListener("mousedown", function (e) {
             that.onMouseDown(e)
-        }, false);
-        this.element.addEventListener("mousemove", function (e) {
-            that.onMouseUp(e)
         }, false);
     }
 
@@ -577,7 +579,7 @@ function CasinoGame() {
             if (confirm("Do you want to sell this for $" + gameCosts[this.type] / 2 + "?")) {
                 casinoSim.cash += gameCosts[this.type] / 2;
                 this.sold = true;
-                casinoSim.removeFromArray(casinoSim.casinoGames, this);
+                casinoSim.removeFromArray(casinoSim.cG, this);
                 this.remove();
             }
         } else if (casinoSim.cursorMode == "select") {
