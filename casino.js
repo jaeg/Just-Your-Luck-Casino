@@ -18,8 +18,8 @@ var gameCosts = new Array();
 gameCosts['slots'] = 100;
 gameCosts['blackjack'] = 250;
 gameCosts['craps'] = 500;
-gameCosts['roulette'] = 150;
-gameCosts['poker'] = 150;
+gameCosts['roulette'] = 200;
+gameCosts['poker'] = 700;
 
 //Events
 var goodEvents = new Array(2);
@@ -39,8 +39,6 @@ casinoDiv.addEventListener("mousemove", function (e) {
          cursorY = (Math.round((e.pageY - casinoOffsetY) / 16) * 16)
 
     var cursorDiv = document.getElementById("cursor");
-    
-   
     cursorDiv.style.left = cursorX + "px";
     cursorDiv.style.top = cursorY + "px";
 
@@ -65,6 +63,7 @@ casinoDiv.addEventListener('mousedown', function (e) {
     }
     if (somethingAtCursor == false) {
         hideInfo();
+        closeAlert();
         casinoSim.unselectAll();
     }
     somethingAtCursor = false;
@@ -75,14 +74,13 @@ function isNumber(n) {
 }
 
 //Classes
-
 function CasinoSim() {
     var people = [];
     this.casinoGames = [];
     this.doodads = [];
 
     var ticks = 0;
-    var paused = false;
+    this.paused = false;
 
     this.cash = 200000;
     this.popularity = 50;
@@ -102,7 +100,7 @@ function CasinoSim() {
         if (this.popularity > 100) {
             this.popularity = 100;
         }
-        if (paused)
+        if (this.paused)
             return true;
 
         for (i in people) {
@@ -138,13 +136,11 @@ function CasinoSim() {
         if (Math.random() < .0001) {
             var extraCash = Math.ceil(Math.random() * 200);
             if (Math.random() > .5) {
-                alert(goodEvents[Math.floor(Math.random() * 2)]);
+                alert(goodEvents[Math.floor(Math.random() * 2)]+"<br/>You gained $" + extraCash + "!");
                 this.cash += extraCash;
-                alert("You gained $" + extraCash + "!");
             } else {
-                alert(badEvents[Math.floor(Math.random() * 3)]);
+                alert(badEvents[Math.floor(Math.random() * 3)] + "<br/>You lost $" + extraCash + "!");
                 this.cash -= extraCash;
-                alert("You lost $" + extraCash + "!");
             }
         }
 
@@ -217,16 +213,17 @@ function CasinoSim() {
     }
 
     this.pauseGame = function () {
-        if (paused == true) {
-            paused = false;
+        if (this.paused == true) {
+            this.paused = false;
         } else {
-            paused = true;
+            this.paused = true;
         }
     }
 
     this.changeCursor = function (cursorMode) {
         this.unselectAll();
         hideInfo();
+        closeAlert();
         this.cursorMode = cursorMode;
         document.getElementById("move").className = "button";
         document.getElementById("sell").className = "button";
@@ -308,7 +305,6 @@ function Entity() {
     }
 }
 
-
 Entity.prototype.onMouseDown = function (e) {
     var coords = this.getPosition();
     somethingAtCursor = true;
@@ -342,7 +338,7 @@ function Person() {
     this.goalX = Math.round(Math.random() * 624 / 16) * 16;
     this.goalY = Math.round(Math.random() * 464 / 16) * 16;
 
-    this.thought = "wandering";
+    this.thought = "findGameToPlay";
     this.gone = false;
     this.gameImPlaying = 0;
     this.playerNumber = 0;
@@ -376,7 +372,7 @@ function Person() {
 
         if (this.cash > 500) {
             this.element.className = "highRoller";
-            this.temperament = 5;
+            this.temperament = 4;
         }
     }
 
@@ -396,6 +392,7 @@ function Person() {
     this.update = function () {
         ticks++;
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
+        
         if (this.gameImPlaying != 0) {
             if (this.gameImPlaying.sold == true || this.gameImPlaying.beingMoved == true) {
                 this.gameImPlaying.currentPlayers--;
@@ -406,6 +403,10 @@ function Person() {
 
         if (this.mood <= 0) {
             this.thought = "leave";
+            if (this.gameImPlayer != 0) {
+                this.gameImPlaying.currentPlayers--;
+                this.gameImPlaying = 0;
+            }
         }
 
         if (this.mood > 100) {
@@ -420,7 +421,8 @@ function Person() {
                 this.goalY = Math.round(Math.random() * 464 / 16) * 16;
                 this.thought = "findGameToPlay";
             }
-            if (ticks % 120 == 0) {
+            if (ticks % 180 == 0) {
+                this.thought = "findGameToPlay";
                 this.mood -= this.temperament;
             }
             if (this.cash <= 0) {
@@ -579,7 +581,7 @@ function CasinoGame() {
             if (confirm("Do you want to sell this for $" + gameCosts[this.type] / 2 + "?")) {
                 casinoSim.cash += gameCosts[this.type] / 2;
                 this.sold = true;
-                casinoSim.removeFromArray(casinoSim.cG, this);
+                casinoSim.removeFromArray(casinoSim.casinoGames, this);
                 this.remove();
             }
         } else if (casinoSim.cursorMode == "select") {
@@ -631,30 +633,30 @@ function CasinoGame() {
         case "slots":
             frameCount = 1;
             this.maxPlayers = 1;
-            this.upKeep = 1;
+            this.upKeep = 2;
             this.costToPlay = 1;
             this.cashOut = 10;
-            this.winRate = .1;
+            this.winRate = .3;
             break;
         case "roulette":
             frameCount = 2;
             this.maxPlayers = 5;
             this.width = 32;
             this.height = 32;
-            this.upKeep = 4.5;
-            this.costToPlay = 50;
-            this.cashOut = 20;
-            this.winRate = .3
+            this.upKeep = 6;
+            this.costToPlay = 25;
+            this.cashOut = 50;
+            this.winRate = .2
             break;
         case "blackjack":
             frameCount = 2;
             this.maxPlayers = 3;
             this.width = 32;
             this.height = 32;
-            this.upKeep = 2;
-            this.costToPlay = 15;
+            this.upKeep = 3;
+            this.costToPlay = 5;
             this.cashOut = 20;
-            this.winRate = .3
+            this.winRate = .2
             break;
 
         case "craps":
@@ -662,21 +664,21 @@ function CasinoGame() {
             this.maxPlayers = 6;
             this.width = 32;
             this.height = 32;
-            this.upKeep = 3;
+            this.upKeep = 4;
             this.costToPlay = 15;
-            this.cashOut = 20;
+            this.cashOut = 25;
             this.winRate = .3
             break;
 
         case "poker":
             frameCount = 2;
-            this.maxPlayers = 6;
+            this.maxPlayers = 7;
             this.width = 32;
             this.height = 32;
-            this.upKeep = 3;
+            this.upKeep = 5;
             this.costToPlay = 15;
-            this.cashOut = 20;
-            this.winRate = .3
+            this.cashOut = 30;
+            this.winRate = .1
             break;
 
         }
@@ -724,6 +726,7 @@ function showInfo() {
     info.style.width = "500px";
     info.style.left = "300px";
     info.style.opacity = 1;
+    casinoSim.paused = true;
 }
 
 function hideInfo() {
@@ -732,6 +735,25 @@ function hideInfo() {
     info.style.width = "0px";
     info.style.left = "500px";
     info.style.opacity = 0;
+    casinoSim.paused = false;
+}
+
+window.alert = function(message) {
+    alertDiv = document.getElementById('alert');
+    alertDiv.style.opacity = 1;
+    alertDiv.style.width = "500px";
+    alertDiv.style.left = "300px";
+    document.getElementById('alertInner').innerHTML = message;
+    casinoSim.paused = true;
+}
+
+function closeAlert() {
+    alertDiv = document.getElementById('alert');
+    alertDiv.style.opacity = 0;
+    alertDiv.style.width = "0px";
+    alertDiv.style.left = "500px";
+    document.getElementById('alert').style.opacity = 0;
+    casinoSim.paused = false;
 }
 
 //***************************
@@ -739,9 +761,10 @@ function hideInfo() {
 //***************************
 
 function StartGame() {
-    alert("Welcome to Just Your Luck Casino! Here's the quick rundown.  You are the new owner of this dump of a casino.  You need to keep the casino from bankruptcy!To do this you can place various games on the casino floor.  You can also rig these games in order to let customers win just enough to keep themhappy and your coffers full.");
     casinoSim.init();
     casinoSim.changeCursor("select");
+    alert("Welcome to Just Your Luck Casino! Here's the quick rundown.  You are the new owner of this dump of a casino.  You need to keep the casino from bankruptcy! To do this you can place various games on the casino floor.  You can also rig these games in order to let customers win just enough to keep them happy and your coffers full.");
+
     Run();
 }
 
@@ -763,7 +786,6 @@ window.requestAnimFrame = (function () {
 
 function Run() {
     //Game running
-
     if (casinoSim.update()) {
         requestAnimFrame(Run);
     }
