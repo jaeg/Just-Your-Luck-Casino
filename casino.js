@@ -97,9 +97,11 @@ function CasinoSim() {
     this.update = function () {
         ticks++;
 
-        if (this.popularity > 100) {
+        if (this.popularity > 100)
             this.popularity = 100;
-        }
+        if (this.popularity < 0)
+            this.popularity = 0;
+            
         if (this.paused)
             return true;
 
@@ -174,7 +176,6 @@ function CasinoSim() {
         if (10 < this.cash) {
             var doodad = new Doodad();
             doodad.init(cursorX, cursorY, "doodad");
-
             doodad.setType(this.creating);
             this.doodads.push(doodad);
             this.cash -= 10;
@@ -206,6 +207,7 @@ function CasinoSim() {
         this.editing.winRate = parseFloat(document.getElementById("gameWinRate").value);
         this.editing.cashOut = parseFloat(document.getElementById("gameCashOut").value);
         this.editing.costToPlay = parseFloat(document.getElementById("gameCostToPlay").value);
+        hideInfo();
     }
     this.setCreateMode = function (itemType) {
         this.creating = itemType;
@@ -401,18 +403,17 @@ function Person() {
             }
         }
 
-        if (this.mood <= 0) {
+        if (this.mood <= this.temperament * 10) {
             this.thought = "leave";
-            if (this.gameImPlayer != 0) {
+            if (this.gameImPlaying != 0) {
                 this.gameImPlaying.currentPlayers--;
                 this.gameImPlaying = 0;
             }
         }
 
-        if (this.mood > 100) {
+        if (this.mood > 100)
             this.mood = 100;
-        }
-
+        
         switch (this.thought) {
         case "wandering":
             this.move();
@@ -424,10 +425,10 @@ function Person() {
             if (ticks % 180 == 0) {
                 this.thought = "findGameToPlay";
                 this.mood -= this.temperament;
+                casinoSim.popularity -= this.temperament;
             }
-            if (this.cash <= 0) {
+            if (this.cash <= 0) 
                 this.thought = "leave";
-            }
             break;
         case "findGameToPlay":
             for (var i in casinoSim.casinoGames) {
@@ -460,13 +461,14 @@ function Person() {
             break;
         case "playgame":
             frame = 1;
-            if (this.gameImPlaying.height > 16) {
+            if (this.gameImPlaying.height > 16)
                 this.setPosition(this.gameImPlaying.getPosition().x + 16 * this.playerNumber, this.gameImPlaying.getPosition().y + 16);
-            } else {
+            else
                 this.setPosition(this.goalX, this.goalY + 1);
-            }
+
             if (ticks % 60 == 0) {
                 this.cash -= this.gameImPlaying.costToPlay;
+                casinoSim.cash += this.gameImPlaying.costToPlay;
                 if (this.gameImPlaying.didIWin()) {
                     casinoSim.cash -= this.gameImPlaying.cashOut;
                     this.cash += this.gameImPlaying.cashOut;
@@ -474,9 +476,8 @@ function Person() {
                     if (this.mood > 70) {
                         casinoSim.popularity++;
                     }
-                } else {
+                } else 
                     this.mood -= this.temperament;
-                }
             }
             if (this.cash < this.gameImPlaying.costToPlay) {
                 this.thought = "findGameToPlay";
@@ -494,11 +495,11 @@ function Person() {
             if (this.closeToGoal()) {
                 if (this.gone == false) {
                     this.remove();
-                    if (this.mood > 70) {
-                        casinoSim.popularity += 1;
-                    } else {
+                    if (this.mood > 70) 
+                        casinoSim.popularity++;
+                    else
                         casinoSim.popularity -= this.temperament;
-                    }
+                    
                     this.gone = true;
                 }
             }
@@ -528,11 +529,9 @@ function Person() {
                 nextBlock.vert = 1;
                 frame = 0;
             }
-
             this.moving = true;
-        } else {
+        } else 
             this.moving = false;
-        }
     }
 
     this.move = function () {
@@ -604,10 +603,8 @@ function CasinoGame() {
             frame++;
             casinoSim.cash -= this.upKeep;
         }
-        if (frame >= frameCount || this.currentPlayers <= 0) {
+        if (frame >= frameCount || this.currentPlayers <= 0) 
             frame = 0;
-        }
-
 
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
 
@@ -619,11 +616,10 @@ function CasinoGame() {
 
     this.didIWin = function () {
         var roll = Math.random();
-        if (this.winRate < roll) {
+        if (this.winRate < roll) 
             return false;
-        } else {
+        else
             return true;
-        }
     }
 
     this.setType = function (type) {
@@ -634,9 +630,9 @@ function CasinoGame() {
             frameCount = 1;
             this.maxPlayers = 1;
             this.upKeep = 2;
-            this.costToPlay = 1;
+            this.costToPlay = 3;
             this.cashOut = 10;
-            this.winRate = .3;
+            this.winRate = .05;
             break;
         case "roulette":
             frameCount = 2;
@@ -706,13 +702,10 @@ function Doodad() {
 
     this.update = function () {
         if (frame == 1)
-        {
             this.element.style.zIndex = 0;
-        }
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
-        if (this.selected == true && casinoSim.cursorMode == "move") {
+        if (this.selected == true && casinoSim.cursorMode == "move")
             this.setPosition(cursorX, cursorY);
-        }
     }
 
     this.setType = function (type) {
@@ -786,9 +779,8 @@ window.requestAnimFrame = (function () {
 
 function Run() {
     //Game running
-    if (casinoSim.update()) {
+    if (casinoSim.update()) 
         requestAnimFrame(Run);
-    }
 }
 
 //Start the game already!
