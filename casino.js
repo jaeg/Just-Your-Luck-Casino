@@ -297,11 +297,6 @@ function Entity() {
         casinoDiv.removeChild(this.element);
     }
 
-
-    this.onMouseUp = function (e) {
-
-    }
-
     this.onMouseMove = function (e) {
 
     }
