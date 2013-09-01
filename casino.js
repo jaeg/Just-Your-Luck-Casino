@@ -739,6 +739,7 @@ function hideInfo() {
 //***************************
 
 function StartGame() {
+    alert("Welcome to Just Your Luck Casino! Here's the quick rundown.  You are the new owner of this dump of a casino.  You need to keep the casino from bankruptcy!To do this you can place various games on the casino floor.  You can also rig these games in order to let customers win just enough to keep themhappy and your coffers full.");
     casinoSim.init();
     casinoSim.changeCursor("select");
     Run();
