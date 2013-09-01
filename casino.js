@@ -386,7 +386,6 @@ function Person() {
             document.getElementById("personInfo").style.display = "block";
             document.getElementById("personMood").innerHTML = this.mood + "%";
             document.getElementById("personCash").innerHTML = "$" + this.cash;
-            document.getElementById("personThought").innerHTML = this.thought;
             document.getElementById("personTemp").innerHTML = this.temperament;
         }
     }
@@ -450,9 +449,9 @@ function Person() {
 
             if (this.gameImPlaying.currentPlayers >= this.gameImPlaying.maxPlayers) {
                 this.thought = "findGameToPlay";
-                this.gameImPlaying = 0;
                 this.goalX = Math.round(Math.random() * 624 / 16) * 16;
                 this.goalY = Math.round(Math.random() * 464 / 16) * 16;
+                this.gameImPlaying = 0;
             } else if (this.closeToGoal()) {
                 this.thought = "playgame";
                 this.playerNumber = this.gameImPlaying.currentPlayers;
@@ -464,7 +463,9 @@ function Person() {
             if (this.gameImPlaying.height > 16)
                 this.setPosition(this.gameImPlaying.getPosition().x + 16 * this.playerNumber, this.gameImPlaying.getPosition().y + 16);
             else
-                this.setPosition(this.goalX, this.goalY + 1);
+                this.setPosition(this.goalX, this.goalY);
+            
+            this.element.style.zIndex = this.gameImPlaying.element.style.zIndex + 1;
 
             if (ticks % 60 == 0) {
                 this.cash -= this.gameImPlaying.costToPlay;
@@ -607,7 +608,7 @@ function CasinoGame() {
             frame = 0;
 
         this.element.style.backgroundPosition = (-frame * this.width) + "px 0px";
-
+        
         if (this.selected == true && casinoSim.cursorMode == "move") {
             this.currentPlayers = 0;
             this.setPosition(cursorX, cursorY);
