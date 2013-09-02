@@ -12,7 +12,7 @@ var casinoOffsetY = parseInt(casinoDiv.style.top, 10);
 var doorX = 320;
 var doorY = 450;
 
-var startingAttendance = 1;
+var startingAttendance = 10;
 
 var gameCosts = new Array();
 gameCosts['slots'] = 100;
@@ -82,7 +82,7 @@ function CasinoSim() {
     var ticks = 0;
     this.paused = false;
 
-    this.cash = 200000;
+    this.cash = 5000;
     this.popularity = 50;
     this.cursorMode = "select";
     this.creating = 0;
@@ -136,7 +136,7 @@ function CasinoSim() {
 
         //Roll a random number to trigger an event.
         if (Math.random() < .0001) {
-            var extraCash = Math.ceil(Math.random() * 200);
+            var extraCash = Math.ceil(this.cash/((Math.random() * 10)+2));
             if (Math.random() > .5) {
                 alert(goodEvents[Math.floor(Math.random() * 2)]+"<br/>You gained $" + extraCash + "!");
                 this.cash += extraCash;
@@ -424,9 +424,9 @@ function Person() {
             if (ticks % 180 == 0) {
                 this.thought = "findGameToPlay";
                 this.mood -= this.temperament;
-                casinoSim.popularity -= this.temperament;
+                casinoSim.popularity--;
             }
-            if (this.cash <= 0) 
+            if (this.cash <= 5) 
                 this.thought = "leave";
             break;
         case "findGameToPlay":
@@ -538,7 +538,7 @@ function Person() {
     this.move = function () {
         var coords = this.getPosition();
 
-        if (coords.x % 16 == 0 && coords.y % 16 == 0) {
+        if (coords.x % 16 < 1 && coords.y % 16 <1) {
             this.findNextBlock(coords);
             coords.x = Math.floor(coords.x / 16) * 16;
             coords.y = Math.floor(coords.y / 16) * 16;
