@@ -127,7 +127,7 @@ function CasinoSim() {
         }
 
         //Add new people
-        if (ticks % 180 == 0) {
+        if (ticks % 120 == 0) {
             var roll = Math.random() * 100;
             if (this.popularity > roll) {
                 addPerson();
